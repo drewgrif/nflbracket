@@ -50,7 +50,8 @@ export default async (req, context) => {
       const bracketData = {
         name: input.name,
         url: 'Bracket Picker',
-        picks: input.picks
+        picks: input.picks,
+        sbTotalPoints: input.sbTotalPoints || 0
       };
 
       if (existingIndex >= 0) {

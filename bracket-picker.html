@@ -247,6 +247,21 @@
             <div class="champion-display" id="champion-display">Select your champion above ⬆️</div>
         </div>
 
+        <div class="name-section" style="margin-top: 30px;">
+            <label for="sb-total-points" style="display: block; margin-bottom: 10px; font-weight: 600; color: #333;">
+                Tiebreaker: Total Points Scored in Super Bowl
+            </label>
+            <input
+                type="number"
+                id="sb-total-points"
+                placeholder="Enter total points (e.g., 48)"
+                min="0"
+                max="150"
+                style="width: 300px;"
+            />
+            <div style="color: #666; font-size: 0.9em; margin-top: 5px;">Used to break ties if multiple people have the same score</div>
+        </div>
+
         <div class="actions">
             <button onclick="downloadBracket()" id="download-btn">Download My Bracket</button>
             <button onclick="resetBracket()" style="background: #6c757d;">Reset All Picks</button>
@@ -469,6 +484,7 @@
 
         function downloadBracket() {
             const name = document.getElementById('participant-name').value.trim();
+            const sbTotalPoints = document.getElementById('sb-total-points').value;
             const messageDiv = document.getElementById('message');
 
             if (!name) {
@@ -487,9 +503,16 @@
                 }
             }
 
+            if (!sbTotalPoints || sbTotalPoints < 0) {
+                messageDiv.className = 'message error';
+                messageDiv.textContent = 'Please enter your Super Bowl total points tiebreaker!';
+                return;
+            }
+
             const bracketData = {
                 name: name,
                 picks: picks,
+                sbTotalPoints: parseInt(sbTotalPoints),
                 timestamp: new Date().toISOString()
             };
 

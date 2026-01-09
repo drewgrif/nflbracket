@@ -408,14 +408,14 @@
             }
         }
 
-        async function submitBracketToAPI(name, picks) {
+        async function submitBracketToAPI(name, picks, sbTotalPoints) {
             try {
                 const response = await fetch('/api/data', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ name, picks })
+                    body: JSON.stringify({ name, picks, sbTotalPoints })
                 });
                 const result = await response.json();
                 if (result.success) {
@@ -575,11 +575,18 @@
             // Calculate scores for all brackets
             const scored = brackets.map(bracket => {
                 const { score, correct, incorrect } = calculateScore(bracket.picks);
-                return { ...bracket, score, correct, incorrect };
+                const sbDiff = results.sbActualTotal ? Math.abs((bracket.sbTotalPoints || 0) - results.sbActualTotal) : 999;
+                return { ...bracket, score, correct, incorrect, sbDiff };
             });
 
-            // Sort by score descending
-            scored.sort((a, b) => b.score - a.score);
+            // Sort by score descending, then by tiebreaker (closer to actual is better)
+            scored.sort((a, b) => {
+                if (b.score !== a.score) {
+                    return b.score - a.score; // Higher score wins
+                }
+                // If scores are equal, use tiebreaker (lower difference is better)
+                return a.sbDiff - b.sbDiff;
+            });
 
             // Generate table
             let html = `
@@ -614,12 +621,18 @@
         }
 
         function viewBracketPicks(name, index) {
-            // Find the bracket in the scored list
+            // Find the bracket in the scored list (using same logic as leaderboard)
             const scored = brackets.map(bracket => {
                 const { score, correct, incorrect } = calculateScore(bracket.picks);
-                return { ...bracket, score, correct, incorrect };
+                const sbDiff = results.sbActualTotal ? Math.abs((bracket.sbTotalPoints || 0) - results.sbActualTotal) : 999;
+                return { ...bracket, score, correct, incorrect, sbDiff };
             });
-            scored.sort((a, b) => b.score - a.score);
+            scored.sort((a, b) => {
+                if (b.score !== a.score) {
+                    return b.score - a.score;
+                }
+                return a.sbDiff - b.sbDiff;
+            });
 
             const bracket = scored[index];
             if (!bracket) {
@@ -668,6 +681,13 @@
             message += '\n=== SUPER BOWL ===\n';
             if (picks.superbowl) message += `Winner: ${getTeamName(picks.superbowl)}${isCorrect('superbowl')}\n`;
 
+            message += '\n=== TIEBREAKER ===\n';
+            message += `Super Bowl Total Points: ${bracket.sbTotalPoints || 'Not entered'}\n`;
+            if (results.sbActualTotal) {
+                const diff = Math.abs((bracket.sbTotalPoints || 0) - results.sbActualTotal);
+                message += `Actual Total: ${results.sbActualTotal} (off by ${diff})\n`;
+            }
+
             alert(message);
         }
 
@@ -694,7 +714,7 @@
                     }
 
                     // Submit bracket to API
-                    const result = await submitBracketToAPI(data.name, data.picks);
+                    const result = await submitBracketToAPI(data.name, data.picks, data.sbTotalPoints || 0);
 
                     if (result.success) {
                         messageDiv.innerHTML = '<div class="success-message">Your bracket has been submitted successfully!</div>';
@@ -768,7 +788,7 @@
             const container = document.getElementById('games-container');
             let html = '';
 
-            // Define actual matchups with reseeding
+            // Define actual matchups
             const wildcardGames = [
                 { id: 'wc_afc_1', title: 'AFC WC Game 1', teams: ['chargers', 'patriots'] },
                 { id: 'wc_afc_2', title: 'AFC WC Game 2', teams: ['bills', 'jaguars'] },
@@ -807,115 +827,120 @@
             const afcWildcardWinners = [results.wc_afc_1, results.wc_afc_2, results.wc_afc_3].filter(t => t);
             const nfcWildcardWinners = [results.wc_nfc_1, results.wc_nfc_2, results.wc_nfc_3].filter(t => t);
 
-            // Only show divisional if we have wildcard results
-            if (afcWildcardWinners.length > 0 || nfcWildcardWinners.length > 0) {
-                html += '<h4 style="margin-top: 30px;">Divisional Round</h4>';
+            // ALWAYS show divisional round
+            html += '<h4 style="margin-top: 30px;">Divisional Round</h4>';
 
-                // AFC Divisional with reseeding
-                if (afcWildcardWinners.length === 3) {
-                    const afcTeams = ['broncos', ...afcWildcardWinners].sort((a, b) => teamSeeds[a] - teamSeeds[b]);
-                    const afcDiv1Teams = [afcTeams[0], afcTeams[3]]; // #1 vs lowest seed
-                    const afcDiv2Teams = [afcTeams[1], afcTeams[2]]; // #2 vs #3
+            // AFC Divisional
+            if (afcWildcardWinners.length === 3) {
+                const afcTeams = ['broncos', ...afcWildcardWinners].sort((a, b) => teamSeeds[a] - teamSeeds[b]);
+                const afcDiv1Teams = [afcTeams[0], afcTeams[3]];
+                const afcDiv2Teams = [afcTeams[1], afcTeams[2]];
 
-                    html += `
-                        <div class="game-card">
-                            <div class="game-title">AFC Div Game 1 (Highest vs Lowest Seed)</div>
-                            ${afcDiv1Teams.map(team => `
-                                <button
-                                    class="team-button ${results.div_afc_1 === team ? 'selected' : ''}"
-                                    onclick="selectWinner('div_afc_1', '${team}')"
-                                >
-                                    ${TEAM_NAMES[team] || team} (${teamSeeds[team]})
-                                </button>
-                            `).join('')}
-                        </div>
-                        <div class="game-card">
-                            <div class="game-title">AFC Div Game 2</div>
-                            ${afcDiv2Teams.map(team => `
-                                <button
-                                    class="team-button ${results.div_afc_2 === team ? 'selected' : ''}"
-                                    onclick="selectWinner('div_afc_2', '${team}')"
-                                >
-                                    ${TEAM_NAMES[team] || team} (${teamSeeds[team]})
-                                </button>
-                            `).join('')}
-                        </div>
-                    `;
-                }
-
-                // NFC Divisional with reseeding
-                if (nfcWildcardWinners.length === 3) {
-                    const nfcTeams = ['seahawks', ...nfcWildcardWinners].sort((a, b) => teamSeeds[a] - teamSeeds[b]);
-                    const nfcDiv1Teams = [nfcTeams[0], nfcTeams[3]]; // #1 vs lowest seed
-                    const nfcDiv2Teams = [nfcTeams[1], nfcTeams[2]]; // #2 vs #3
-
-                    html += `
-                        <div class="game-card">
-                            <div class="game-title">NFC Div Game 1 (Highest vs Lowest Seed)</div>
-                            ${nfcDiv1Teams.map(team => `
-                                <button
-                                    class="team-button ${results.div_nfc_1 === team ? 'selected' : ''}"
-                                    onclick="selectWinner('div_nfc_1', '${team}')"
-                                >
-                                    ${TEAM_NAMES[team] || team} (${teamSeeds[team]})
-                                </button>
-                            `).join('')}
-                        </div>
-                        <div class="game-card">
-                            <div class="game-title">NFC Div Game 2</div>
-                            ${nfcDiv2Teams.map(team => `
-                                <button
-                                    class="team-button ${results.div_nfc_2 === team ? 'selected' : ''}"
-                                    onclick="selectWinner('div_nfc_2', '${team}')"
-                                >
-                                    ${TEAM_NAMES[team] || team} (${teamSeeds[team]})
-                                </button>
-                            `).join('')}
-                        </div>
-                    `;
-                }
+                html += `
+                    <div class="game-card">
+                        <div class="game-title">AFC Div Game 1</div>
+                        ${afcDiv1Teams.map(team => `
+                            <button
+                                class="team-button ${results.div_afc_1 === team ? 'selected' : ''}"
+                                onclick="selectWinner('div_afc_1', '${team}')"
+                            >
+                                ${TEAM_NAMES[team] || team} (${teamSeeds[team]})
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div class="game-card">
+                        <div class="game-title">AFC Div Game 2</div>
+                        ${afcDiv2Teams.map(team => `
+                            <button
+                                class="team-button ${results.div_afc_2 === team ? 'selected' : ''}"
+                                onclick="selectWinner('div_afc_2', '${team}')"
+                            >
+                                ${TEAM_NAMES[team] || team} (${teamSeeds[team]})
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                html += '<p style="color: #999; font-style: italic;">Mark all wildcard winners to see divisional matchups</p>';
             }
 
-            // Conference Championships
-            if (results.div_afc_1 && results.div_afc_2 || results.div_nfc_1 && results.div_nfc_2) {
-                html += '<h4 style="margin-top: 30px;">Conference Championships</h4>';
+            // NFC Divisional
+            if (nfcWildcardWinners.length === 3) {
+                const nfcTeams = ['seahawks', ...nfcWildcardWinners].sort((a, b) => teamSeeds[a] - teamSeeds[b]);
+                const nfcDiv1Teams = [nfcTeams[0], nfcTeams[3]];
+                const nfcDiv2Teams = [nfcTeams[1], nfcTeams[2]];
 
-                if (results.div_afc_1 && results.div_afc_2) {
-                    html += `
-                        <div class="game-card">
-                            <div class="game-title">AFC Championship</div>
-                            ${[results.div_afc_1, results.div_afc_2].map(team => `
-                                <button
-                                    class="team-button ${results.conf_afc === team ? 'selected' : ''}"
-                                    onclick="selectWinner('conf_afc', '${team}')"
-                                >
-                                    ${TEAM_NAMES[team] || team}
-                                </button>
-                            `).join('')}
-                        </div>
-                    `;
-                }
-
-                if (results.div_nfc_1 && results.div_nfc_2) {
-                    html += `
-                        <div class="game-card">
-                            <div class="game-title">NFC Championship</div>
-                            ${[results.div_nfc_1, results.div_nfc_2].map(team => `
-                                <button
-                                    class="team-button ${results.conf_nfc === team ? 'selected' : ''}"
-                                    onclick="selectWinner('conf_nfc', '${team}')"
-                                >
-                                    ${TEAM_NAMES[team] || team}
-                                </button>
-                            `).join('')}
-                        </div>
-                    `;
-                }
+                html += `
+                    <div class="game-card">
+                        <div class="game-title">NFC Div Game 1</div>
+                        ${nfcDiv1Teams.map(team => `
+                            <button
+                                class="team-button ${results.div_nfc_1 === team ? 'selected' : ''}"
+                                onclick="selectWinner('div_nfc_1', '${team}')"
+                            >
+                                ${TEAM_NAMES[team] || team} (${teamSeeds[team]})
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div class="game-card">
+                        <div class="game-title">NFC Div Game 2</div>
+                        ${nfcDiv2Teams.map(team => `
+                            <button
+                                class="team-button ${results.div_nfc_2 === team ? 'selected' : ''}"
+                                onclick="selectWinner('div_nfc_2', '${team}')"
+                            >
+                                ${TEAM_NAMES[team] || team} (${teamSeeds[team]})
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+            } else if (afcWildcardWinners.length === 3) {
+                // AFC done but not NFC
+                html += '<p style="color: #999; font-style: italic;">Mark all NFC wildcard winners to see NFC divisional matchups</p>';
             }
 
-            // Super Bowl
+            // ALWAYS show Conference Championships
+            html += '<h4 style="margin-top: 30px;">Conference Championships</h4>';
+
+            if (results.div_afc_1 && results.div_afc_2) {
+                html += `
+                    <div class="game-card">
+                        <div class="game-title">AFC Championship</div>
+                        ${[results.div_afc_1, results.div_afc_2].map(team => `
+                            <button
+                                class="team-button ${results.conf_afc === team ? 'selected' : ''}"
+                                onclick="selectWinner('conf_afc', '${team}')"
+                            >
+                                ${TEAM_NAMES[team] || team}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                html += '<p style="color: #999; font-style: italic;">Mark AFC divisional winners to see AFC Championship</p>';
+            }
+
+            if (results.div_nfc_1 && results.div_nfc_2) {
+                html += `
+                    <div class="game-card">
+                        <div class="game-title">NFC Championship</div>
+                        ${[results.div_nfc_1, results.div_nfc_2].map(team => `
+                            <button
+                                class="team-button ${results.conf_nfc === team ? 'selected' : ''}"
+                                onclick="selectWinner('conf_nfc', '${team}')"
+                            >
+                                ${TEAM_NAMES[team] || team}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                html += '<p style="color: #999; font-style: italic;">Mark NFC divisional winners to see NFC Championship</p>';
+            }
+
+            // ALWAYS show Super Bowl
+            html += '<h4 style="margin-top: 30px;">Super Bowl</h4>';
             if (results.conf_afc && results.conf_nfc) {
-                html += '<h4 style="margin-top: 30px;">Super Bowl</h4>';
                 html += `
                     <div class="game-card">
                         <div class="game-title">Super Bowl</div>
@@ -928,10 +953,31 @@
                             </button>
                         `).join('')}
                     </div>
+                    <div class="game-card" style="margin-top: 15px;">
+                        <div class="game-title">Super Bowl Total Points (Tiebreaker)</div>
+                        <input
+                            type="number"
+                            id="sb-actual-total"
+                            placeholder="Enter actual total points"
+                            value="${results.sbActualTotal || ''}"
+                            onchange="updateSBActualTotal(this.value)"
+                            style="width: 100%; padding: 10px; font-size: 16px; border: 2px solid #ddd; border-radius: 6px;"
+                            min="0"
+                            max="150"
+                        />
+                        <p style="margin-top: 5px; color: #666; font-size: 14px;">Enter the combined final score after the game</p>
+                    </div>
                 `;
+            } else {
+                html += '<p style="color: #999; font-style: italic;">Mark conference champions to see Super Bowl matchup</p>';
             }
 
             container.innerHTML = html;
+        }
+
+        function updateSBActualTotal(value) {
+            results.sbActualTotal = parseInt(value) || null;
+            updateLeaderboard();
         }
 
         function selectWinner(gameId, team) {
@@ -1029,7 +1075,7 @@
                     }
 
                     // Submit bracket to API
-                    const result = await submitBracketToAPI(data.name, data.picks);
+                    const result = await submitBracketToAPI(data.name, data.picks, data.sbTotalPoints || 0);
                     if (result.success) {
                         imported++;
                     } else {
@@ -1278,6 +1324,7 @@
             let html = '<table class="leaderboard-table"><thead><tr>';
             html += '<th>Name</th>';
             html += '<th>Score</th>';
+            html += '<th>SB Total</th>';
             html += '<th>Action</th>';
             html += '</tr></thead><tbody>';
 
@@ -1285,11 +1332,12 @@
             const sortedBrackets = [...brackets].sort((a, b) => a.name.localeCompare(b.name));
 
             sortedBrackets.forEach(bracket => {
-                const score = calculateScore(bracket.picks);
+                const { score } = calculateScore(bracket.picks);
                 html += `
                     <tr>
                         <td>${escapeHtml(bracket.name)}</td>
                         <td>${score} points</td>
+                        <td>${bracket.sbTotalPoints || 'N/A'}</td>
                         <td><button onclick="deleteBracket('${escapeHtml(bracket.name).replace(/'/g, "\\'")}')" class="danger" style="padding: 5px 15px; font-size: 14px;">Delete</button></td>
                     </tr>
                 `;
