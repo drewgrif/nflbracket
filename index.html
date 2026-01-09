@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFL Playoff Bracket Pool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #444;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        /* Submission Form */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input[type="text"], input[type="password"], select.team-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus, select.team-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button.secondary {
+            background: #6c757d;
+        }
+
+        button.secondary:hover {
+            background: #5a6268;
+        }
+
+        button.danger {
+            background: #dc3545;
+        }
+
+        button.danger:hover {
+            background: #c82333;
+        }
+
+        .success-message, .error-message {
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Leaderboard */
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .leaderboard-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .leaderboard-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .leaderboard-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .rank-1 {
+            background: #fff3cd !important;
+            font-weight: 600;
+        }
+
+        .rank-2 {
+            background: #e2e3e5 !important;
+        }
+
+        .rank-3 {
+            background: #f8d7da !important;
+        }
+
+        .bracket-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .bracket-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Admin Section */
+        .admin-section {
+            display: none;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .admin-toggle {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .game-picker {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .game-card {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .game-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .team-button {
+            width: 100%;
+            margin: 5px 0;
+            padding: 10px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .team-button:hover {
+            border-color: #667eea;
+        }
+
+        .team-button.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .picks-detail {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏈 NFL Playoff Bracket Pool</h1>
+        <p class="subtitle">Track the competition and see who's winning!</p>
+
+        <!-- Submit Bracket -->
+        <div class="section">
+            <h2 class="section-title">Submit Your Bracket</h2>
+            <p style="margin-bottom: 15px; color: #666;">
+                Fill out your bracket using the <strong>bracket picker</strong> tool, download your file, then upload it here.
+            </p>
+            <div class="form-group">
+                <label for="public-bracket-upload">Upload Your Bracket File (.json)</label>
+                <input type="file" id="public-bracket-upload" accept=".json" style="margin-top: 10px;">
+            </div>
+            <button onclick="submitBracketFile()" style="margin-top: 10px;">Submit My Bracket</button>
+            <div id="public-submission-message"></div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="section">
+            <h2 class="section-title">Leaderboard</h2>
+            <div id="leaderboard-container">
+                <div class="empty-state">No brackets submitted yet. Be the first!</div>
+            </div>
+        </div>
+
+        <!-- Admin Toggle -->
+        <div class="admin-toggle">
+            <button id="admin-toggle-btn" class="secondary">Admin Panel</button>
+        </div>
+
+        <!-- Admin Section -->
+        <div class="admin-section" id="admin-section">
+            <h2 class="section-title">Admin Panel</h2>
+
+            <!-- Password Protection -->
+            <div id="admin-login">
+                <div class="form-group">
+                    <label for="admin-password">Admin Password</label>
+                    <input type="password" id="admin-password" placeholder="Enter admin password">
+                </div>
+                <button onclick="checkAdminPassword()">Login</button>
+                <div id="admin-login-message" style="margin-top: 15px;"></div>
+            </div>
+
+            <div id="admin-content" class="hidden">
+                <!-- Mark Game Results -->
+                <div class="section">
+                    <h3>Mark Game Results</h3>
+                    <p style="margin-bottom: 15px; color: #666;">
+                        Click on the winning team for each game. The bracket will automatically advance teams to the next rounds with proper reseeding.
+                        Scores update in real-time as you mark games. Click "Save Results" to persist changes.
+                    </p>
+                    <div id="games-container" class="game-picker"></div>
+                    <button onclick="saveResultsToServer()" style="margin-top: 20px;">Save Results</button>
+                </div>
+
+                <!-- Data Management -->
+                <div class="section">
+                    <h3>Data Management</h3>
+                    <div class="button-group">
+                        <button onclick="document.getElementById('import-bracket-files').click()">Import Bracket Files</button>
+                        <button onclick="exportData()">Export Data (JSON)</button>
+                        <button onclick="document.getElementById('import-file').click()" class="secondary">Import Backup JSON</button>
+                        <button onclick="clearAllData()" class="danger">Clear All Data</button>
+                    </div>
+                    <input type="file" id="import-bracket-files" accept=".json" multiple style="display: none;" onchange="importBracketFiles(event)">
+                    <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(event)">
+                    <div id="import-result" style="margin-top: 15px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DATA MODELS =====
+
+        // NFL Playoff Structure (from bracket site)
+        const TEAMS = {
+            afc: ['broncos', 'patriots', 'jaguars', 'steelers', 'texans', 'bills', 'chargers'],
+            nfc: ['seahawks', 'bears', 'eagles', 'panthers', 'rams', 'fortyniners', 'packers']
+        };
+
+        // Team display names
+        const TEAM_NAMES = {
+            'broncos': 'Broncos', 'patriots': 'Patriots', 'jaguars': 'Jaguars',
+            'steelers': 'Steelers', 'texans': 'Texans', 'bills': 'Bills', 'chargers': 'Chargers',
+            'seahawks': 'Seahawks', 'bears': 'Bears', 'eagles': 'Eagles',
+            'panthers': 'Panthers', 'rams': 'Rams', 'fortyniners': '49ers', 'packers': 'Packers'
+        };
+
+        // Game definitions (order matches bit positions in encoded hash)
+        const GAMES = [
+            // AFC Wildcard (positions 1-3 from left on bracket)
+            { id: 'wc_afc_1', round: 'Wildcard', conference: 'AFC', slot: 1, teams: ['chargers', 'patriots'] },
+            { id: 'wc_afc_2', round: 'Wildcard', conference: 'AFC', slot: 2, teams: ['bills', 'jaguars'] },
+            { id: 'wc_afc_3', round: 'Wildcard', conference: 'AFC', slot: 3, teams: ['texans', 'steelers'] },
+
+            // NFC Wildcard (positions 1-3 from right on bracket)
+            { id: 'wc_nfc_1', round: 'Wildcard', conference: 'NFC', slot: 1, teams: ['packers', 'bears'] },
+            { id: 'wc_nfc_2', round: 'Wildcard', conference: 'NFC', slot: 2, teams: ['fortyniners', 'seahawks'] },
+            { id: 'wc_nfc_3', round: 'Wildcard', conference: 'NFC', slot: 3, teams: ['eagles', 'panthers', 'rams'] }, // 3-way pick
+
+            // AFC Divisional
+            { id: 'div_afc_1', round: 'Divisional', conference: 'AFC', slot: 1 },
+            { id: 'div_afc_2', round: 'Divisional', conference: 'AFC', slot: 2 },
+
+            // NFC Divisional
+            { id: 'div_nfc_1', round: 'Divisional', conference: 'NFC', slot: 1 },
+            { id: 'div_nfc_2', round: 'Divisional', conference: 'NFC', slot: 2 },
+
+            // Conference Championships
+            { id: 'conf_afc', round: 'AFC Championship', conference: 'AFC' },
+            { id: 'conf_nfc', round: 'NFC Championship', conference: 'NFC' },
+
+            // Super Bowl
+            { id: 'superbowl', round: 'Super Bowl', conference: 'Both' }
+        ];
+
+        // ===== STATE MANAGEMENT =====
+
+        let brackets = [];
+        let results = {};
+        let adminAuthenticated = false;
+
+        // ===== API FUNCTIONS =====
+
+        async function loadData() {
+            try {
+                const response = await fetch('/api/data');
+                const data = await response.json();
+                brackets = data.brackets || [];
+                results = data.results || {};
+                updateLeaderboard();
+            } catch (error) {
+                console.error('Failed to load data:', error);
+            }
+        }
+
+        async function submitBracketToAPI(name, picks) {
+            try {
+                const response = await fetch('/api/data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, picks })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    await loadData(); // Reload data from server
+                }
+                return result;
+            } catch (error) {
+                console.error('Failed to submit bracket:', error);
+                return { error: 'Failed to submit bracket' };
+            }
+        }
+
+        async function saveResults(password) {
+            try {
+                const response = await fetch('/api/results', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ password, results })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    await loadData(); // Reload data from server
+                }
+                return result;
+            } catch (error) {
+                console.error('Failed to save results:', error);
+                return { error: 'Failed to save results' };
+            }
+        }
+
+        // ===== BRACKET URL DECODER =====
+
+        function decodeBracketURL(url) {
+            try {
+                // Extract the hash number
+                const hash = url.split('#')[1];
+                if (!hash) {
+                    throw new Error('No hash found in URL');
+                }
+
+                const serial = parseInt(hash);
+                if (isNaN(serial)) {
+                    throw new Error('Invalid hash number');
+                }
+
+                // Analyzing the patterns:
+                // #1416415 = 10101100100001101111 -> Patriots,Bills,Steelers / Packers,Seahawks,Rams -> Broncos
+                // #1329602 = 101000100100111000010 -> Bills,Texans,Patriots / Packers,49ers,Panthers -> Panthers
+                // #1059610 = 10000010010000011010 -> Chargers,Steelers,Jaguars / 49ers,Rams,Bears -> Jaguars
+
+                // Convert to binary (reading right to left, bit 0 is rightmost)
+                const binary = serial.toString(2).padStart(21, '0');
+                const picks = {};
+
+                // Let me decode bit by bit comparing the three brackets
+                // Bit 0 (rightmost):
+                // 1416415: ...1 -> Patriots (not Chargers)
+                // 1329602: ...0 -> Bills (not Chargers)
+                // 1059610: ...0 -> Chargers
+                // Pattern: bit0=1 means skip chargers in AFC game 1?
+
+                // This is getting complex. Let me try a different approach.
+                // The encoding likely represents a series of binary choices at each game
+
+                const bit0 = binary[binary.length - 1];
+                picks['wc_afc_1'] = bit0 === '0' ? 'chargers' : 'patriots';
+
+                const bit1 = binary[binary.length - 2];
+                picks['wc_afc_2'] = bit1 === '0' ? 'jaguars' : 'bills';
+
+                const bit2 = binary[binary.length - 3];
+                picks['wc_afc_3'] = bit2 === '0' ? 'steelers' : 'texans';
+
+                const bit3 = binary[binary.length - 4];
+                picks['wc_nfc_1'] = bit3 === '0' ? 'bears' : 'packers';
+
+                const bit4 = binary[binary.length - 5];
+                picks['wc_nfc_2'] = bit4 === '0' ? 'seahawks' : 'fortyniners';
+
+                // NFC Game 3 needs 2 bits for 3-way choice (eagles, panthers, rams)
+                const bit5 = binary[binary.length - 6];
+                const bit6 = binary[binary.length - 7];
+                const nfc3bits = bit6 + bit5;
+                if (nfc3bits === '00') picks['wc_nfc_3'] = 'rams';
+                else if (nfc3bits === '01') picks['wc_nfc_3'] = 'panthers';
+                else if (nfc3bits === '10') picks['wc_nfc_3'] = 'eagles';
+                else picks['wc_nfc_3'] = 'bears';
+
+                // For now, decode remaining rounds dynamically based on wildcard winners
+                const afcWC = [picks['wc_afc_1'], picks['wc_afc_2'], picks['wc_afc_3']];
+                const nfcWC = [picks['wc_nfc_1'], picks['wc_nfc_2'], picks['wc_nfc_3']];
+
+                // Divisional (bits 7-10)
+                const bit7 = binary[binary.length - 8];
+                const bit8 = binary[binary.length - 9];
+                const bit9 = binary[binary.length - 10];
+                const bit10 = binary[binary.length - 11];
+
+                picks['div_afc_1'] = bit7 === '0' ? afcWC[0] : 'broncos';
+                picks['div_afc_2'] = bit8 === '0' ? afcWC[1] : afcWC[2];
+
+                picks['div_nfc_1'] = bit9 === '0' ? nfcWC[0] : nfcWC[1];
+                picks['div_nfc_2'] = bit10 === '0' ? nfcWC[1] : nfcWC[2];
+
+                // Conference (bits 11-12)
+                const bit11 = binary[binary.length - 12];
+                const bit12 = binary[binary.length - 13];
+
+                const afcDiv = [picks['div_afc_1'], picks['div_afc_2']];
+                picks['conf_afc'] = bit11 === '0' ? afcDiv[0] : afcDiv[1];
+
+                const nfcDiv = [picks['div_nfc_1'], picks['div_nfc_2']];
+                picks['conf_nfc'] = bit12 === '0' ? nfcDiv[0] : nfcDiv[1];
+
+                // Super Bowl (bit 13)
+                const bit13 = binary[binary.length - 14];
+                picks['superbowl'] = bit13 === '0' ? picks['conf_afc'] : picks['conf_nfc'];
+
+                return picks;
+            } catch (error) {
+                console.error('Error decoding bracket URL:', error);
+                return null;
+            }
+        }
+
+        // ===== SCORING ENGINE =====
+
+        function calculateScore(picks) {
+            let score = 0;
+            let correct = [];
+            let incorrect = [];
+
+            for (let gameId in results) {
+                if (picks[gameId] === results[gameId]) {
+                    score += 1;
+                    correct.push(gameId);
+                } else if (picks[gameId]) {
+                    incorrect.push(gameId);
+                }
+            }
+
+            return { score, correct, incorrect };
+        }
+
+        // ===== LEADERBOARD =====
+
+        function updateLeaderboard() {
+            const container = document.getElementById('leaderboard-container');
+
+            if (brackets.length === 0) {
+                container.innerHTML = '<div class="empty-state">No brackets submitted yet. Be the first!</div>';
+                return;
+            }
+
+            // Calculate scores for all brackets
+            const scored = brackets.map(bracket => {
+                const { score, correct, incorrect } = calculateScore(bracket.picks);
+                return { ...bracket, score, correct, incorrect };
+            });
+
+            // Sort by score descending
+            scored.sort((a, b) => b.score - a.score);
+
+            // Generate table
+            let html = `
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Name</th>
+                            <th>Score</th>
+                            <th>Bracket</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            scored.forEach((bracket, index) => {
+                const rank = index + 1;
+                const rowClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
+
+                html += `
+                    <tr class="${rowClass}">
+                        <td>${rank}</td>
+                        <td>${escapeHtml(bracket.name)}</td>
+                        <td>${bracket.score} points</td>
+                        <td><a href="${escapeHtml(bracket.url)}" target="_blank" class="bracket-link">View Bracket</a></td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // ===== PUBLIC BRACKET SUBMISSION =====
+
+        async function submitBracketFile() {
+            const fileInput = document.getElementById('public-bracket-upload');
+            const messageDiv = document.getElementById('public-submission-message');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                messageDiv.innerHTML = '<div class="error-message">Please select a bracket file to upload</div>';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+
+                    if (!data.name || !data.picks) {
+                        messageDiv.innerHTML = '<div class="error-message">Invalid bracket file format</div>';
+                        return;
+                    }
+
+                    // Submit bracket to API
+                    const result = await submitBracketToAPI(data.name, data.picks);
+
+                    if (result.success) {
+                        messageDiv.innerHTML = '<div class="success-message">Your bracket has been submitted successfully!</div>';
+                    } else {
+                        messageDiv.innerHTML = `<div class="error-message">${result.error || 'Failed to submit bracket'}</div>`;
+                    }
+
+                    // Clear file input
+                    fileInput.value = '';
+
+                    setTimeout(() => {
+                        messageDiv.innerHTML = '';
+                    }, 5000);
+
+                } catch (error) {
+                    messageDiv.innerHTML = `<div class="error-message">Error reading file: ${error.message}</div>`;
+                }
+            };
+
+            reader.readAsText(file);
+        }
+
+        // ===== ADMIN PANEL =====
+
+        // CHANGE THIS PASSWORD TO YOUR OWN
+        const ADMIN_PASSWORD = 'admin123';
+
+        document.getElementById('admin-toggle-btn').addEventListener('click', function() {
+            const adminSection = document.getElementById('admin-section');
+            adminSection.style.display = adminSection.style.display === 'none' ? 'block' : 'none';
+        });
+
+        function checkAdminPassword() {
+            const passwordInput = document.getElementById('admin-password');
+            const messageDiv = document.getElementById('admin-login-message');
+            const password = passwordInput.value;
+
+            if (password === ADMIN_PASSWORD) {
+                // Hide login form, show admin content
+                document.getElementById('admin-login').style.display = 'none';
+                document.getElementById('admin-content').classList.remove('hidden');
+                renderGamesForAdmin();
+                adminAuthenticated = true;
+            } else {
+                messageDiv.innerHTML = '<div class="error-message">Incorrect password</div>';
+                passwordInput.value = '';
+                setTimeout(() => {
+                    messageDiv.innerHTML = '';
+                }, 3000);
+            }
+        }
+
+        // Allow pressing Enter to submit password
+        document.getElementById('admin-password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkAdminPassword();
+            }
+        });
+
+        async function saveResultsToServer() {
+            const result = await saveResults(ADMIN_PASSWORD);
+            if (result.success) {
+                alert('Results saved successfully!');
+            } else {
+                alert(result.error || 'Failed to save results');
+            }
+        }
+
+        function renderGamesForAdmin() {
+            const container = document.getElementById('games-container');
+            let html = '';
+
+            // Define actual matchups with reseeding
+            const wildcardGames = [
+                { id: 'wc_afc_1', title: 'AFC WC Game 1', teams: ['chargers', 'patriots'] },
+                { id: 'wc_afc_2', title: 'AFC WC Game 2', teams: ['bills', 'jaguars'] },
+                { id: 'wc_afc_3', title: 'AFC WC Game 3', teams: ['texans', 'steelers'] },
+                { id: 'wc_nfc_1', title: 'NFC WC Game 1', teams: ['packers', 'bears'] },
+                { id: 'wc_nfc_2', title: 'NFC WC Game 2', teams: ['fortyniners', 'eagles'] },
+                { id: 'wc_nfc_3', title: 'NFC WC Game 3', teams: ['panthers', 'rams'] }
+            ];
+
+            // Team seeds for reseeding
+            const teamSeeds = {
+                'broncos': 1, 'patriots': 2, 'jaguars': 3, 'steelers': 4, 'texans': 5, 'bills': 6, 'chargers': 7,
+                'seahawks': 1, 'bears': 2, 'eagles': 3, 'panthers': 4, 'rams': 5, 'fortyniners': 6, 'packers': 7
+            };
+
+            // Render Wildcard Games
+            html += '<h4>Wildcard Round</h4>';
+            wildcardGames.forEach(game => {
+                const currentWinner = results[game.id] || null;
+                html += `
+                    <div class="game-card">
+                        <div class="game-title">${game.title}</div>
+                        ${game.teams.map(team => `
+                            <button
+                                class="team-button ${currentWinner === team ? 'selected' : ''}"
+                                onclick="selectWinner('${game.id}', '${team}')"
+                            >
+                                ${TEAM_NAMES[team] || team}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+            });
+
+            // Get wildcard winners and calculate divisional matchups with reseeding
+            const afcWildcardWinners = [results.wc_afc_1, results.wc_afc_2, results.wc_afc_3].filter(t => t);
+            const nfcWildcardWinners = [results.wc_nfc_1, results.wc_nfc_2, results.wc_nfc_3].filter(t => t);
+
+            // Only show divisional if we have wildcard results
+            if (afcWildcardWinners.length > 0 || nfcWildcardWinners.length > 0) {
+                html += '<h4 style="margin-top: 30px;">Divisional Round</h4>';
+
+                // AFC Divisional with reseeding
+                if (afcWildcardWinners.length === 3) {
+                    const afcTeams = ['broncos', ...afcWildcardWinners].sort((a, b) => teamSeeds[a] - teamSeeds[b]);
+                    const afcDiv1Teams = [afcTeams[0], afcTeams[3]]; // #1 vs lowest seed
+                    const afcDiv2Teams = [afcTeams[1], afcTeams[2]]; // #2 vs #3
+
+                    html += `
+                        <div class="game-card">
+                            <div class="game-title">AFC Div Game 1 (Highest vs Lowest Seed)</div>
+                            ${afcDiv1Teams.map(team => `
+                                <button
+                                    class="team-button ${results.div_afc_1 === team ? 'selected' : ''}"
+                                    onclick="selectWinner('div_afc_1', '${team}')"
+                                >
+                                    ${TEAM_NAMES[team] || team} (${teamSeeds[team]})
+                                </button>
+                            `).join('')}
+                        </div>
+                        <div class="game-card">
+                            <div class="game-title">AFC Div Game 2</div>
+                            ${afcDiv2Teams.map(team => `
+                                <button
+                                    class="team-button ${results.div_afc_2 === team ? 'selected' : ''}"
+                                    onclick="selectWinner('div_afc_2', '${team}')"
+                                >
+                                    ${TEAM_NAMES[team] || team} (${teamSeeds[team]})
+                                </button>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                // NFC Divisional with reseeding
+                if (nfcWildcardWinners.length === 3) {
+                    const nfcTeams = ['seahawks', ...nfcWildcardWinners].sort((a, b) => teamSeeds[a] - teamSeeds[b]);
+                    const nfcDiv1Teams = [nfcTeams[0], nfcTeams[3]]; // #1 vs lowest seed
+                    const nfcDiv2Teams = [nfcTeams[1], nfcTeams[2]]; // #2 vs #3
+
+                    html += `
+                        <div class="game-card">
+                            <div class="game-title">NFC Div Game 1 (Highest vs Lowest Seed)</div>
+                            ${nfcDiv1Teams.map(team => `
+                                <button
+                                    class="team-button ${results.div_nfc_1 === team ? 'selected' : ''}"
+                                    onclick="selectWinner('div_nfc_1', '${team}')"
+                                >
+                                    ${TEAM_NAMES[team] || team} (${teamSeeds[team]})
+                                </button>
+                            `).join('')}
+                        </div>
+                        <div class="game-card">
+                            <div class="game-title">NFC Div Game 2</div>
+                            ${nfcDiv2Teams.map(team => `
+                                <button
+                                    class="team-button ${results.div_nfc_2 === team ? 'selected' : ''}"
+                                    onclick="selectWinner('div_nfc_2', '${team}')"
+                                >
+                                    ${TEAM_NAMES[team] || team} (${teamSeeds[team]})
+                                </button>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            }
+
+            // Conference Championships
+            if (results.div_afc_1 && results.div_afc_2 || results.div_nfc_1 && results.div_nfc_2) {
+                html += '<h4 style="margin-top: 30px;">Conference Championships</h4>';
+
+                if (results.div_afc_1 && results.div_afc_2) {
+                    html += `
+                        <div class="game-card">
+                            <div class="game-title">AFC Championship</div>
+                            ${[results.div_afc_1, results.div_afc_2].map(team => `
+                                <button
+                                    class="team-button ${results.conf_afc === team ? 'selected' : ''}"
+                                    onclick="selectWinner('conf_afc', '${team}')"
+                                >
+                                    ${TEAM_NAMES[team] || team}
+                                </button>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                if (results.div_nfc_1 && results.div_nfc_2) {
+                    html += `
+                        <div class="game-card">
+                            <div class="game-title">NFC Championship</div>
+                            ${[results.div_nfc_1, results.div_nfc_2].map(team => `
+                                <button
+                                    class="team-button ${results.conf_nfc === team ? 'selected' : ''}"
+                                    onclick="selectWinner('conf_nfc', '${team}')"
+                                >
+                                    ${TEAM_NAMES[team] || team}
+                                </button>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            }
+
+            // Super Bowl
+            if (results.conf_afc && results.conf_nfc) {
+                html += '<h4 style="margin-top: 30px;">Super Bowl</h4>';
+                html += `
+                    <div class="game-card">
+                        <div class="game-title">Super Bowl</div>
+                        ${[results.conf_afc, results.conf_nfc].map(team => `
+                            <button
+                                class="team-button ${results.superbowl === team ? 'selected' : ''}"
+                                onclick="selectWinner('superbowl', '${team}')"
+                            >
+                                ${TEAM_NAMES[team] || team}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function selectWinner(gameId, team) {
+            results[gameId] = team;
+            renderGamesForAdmin();
+            // Auto-update leaderboard as results change
+            updateLeaderboard();
+        }
+
+        function saveResults() {
+            saveData();
+            updateLeaderboard();
+            alert('Results saved successfully!');
+        }
+
+        // ===== DATA MANAGEMENT =====
+
+        function exportData() {
+            const data = {
+                brackets: brackets,
+                results: results,
+                exportDate: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `nfl-bracket-data-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        async function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+
+                    // Send data to server
+                    const response = await fetch('/api/admin', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            password: ADMIN_PASSWORD,
+                            operation: 'import',
+                            data: {
+                                brackets: data.brackets || [],
+                                results: data.results || {}
+                            }
+                        })
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        await loadData();
+                        renderGamesForAdmin();
+                        alert('Data imported successfully!');
+                    } else {
+                        alert(result.error || 'Failed to import data');
+                    }
+                } catch (error) {
+                    alert('Error importing data: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        async function importBracketFiles(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            const resultDiv = document.getElementById('import-result');
+            let imported = 0;
+            let errors = [];
+
+            const fileArray = Array.from(files);
+
+            for (let i = 0; i < fileArray.length; i++) {
+                const file = fileArray[i];
+
+                try {
+                    const text = await file.text();
+                    const data = JSON.parse(text);
+
+                    if (!data.name || !data.picks) {
+                        errors.push(`${file.name}: Invalid bracket file format`);
+                        continue;
+                    }
+
+                    // Submit bracket to API
+                    const result = await submitBracketToAPI(data.name, data.picks);
+                    if (result.success) {
+                        imported++;
+                    } else {
+                        errors.push(`${file.name}: ${result.error || 'Failed to import'}`);
+                    }
+                } catch (error) {
+                    errors.push(`${file.name}: ${error.message}`);
+                }
+            }
+
+            // Update UI with results
+            let message = `<div class="success-message">Successfully imported ${imported} bracket(s)!`;
+            if (errors.length > 0) {
+                message += `<br><br><strong>Errors:</strong><br>${errors.join('<br>')}`;
+            }
+            message += '</div>';
+
+            resultDiv.innerHTML = message;
+
+            setTimeout(() => {
+                resultDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        function importCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const resultDiv = document.getElementById('import-result');
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                try {
+                    const csv = e.target.result;
+                    const lines = csv.split('\n');
+
+                    if (lines.length < 2) {
+                        resultDiv.innerHTML = '<div class="error-message">CSV file appears to be empty</div>';
+                        return;
+                    }
+
+                    // Parse header row
+                    const headers = lines[0].split(',').map(h => h.trim());
+
+                    // Find column indices (Google Forms columns)
+                    const nameCol = headers.findIndex(h => h.toLowerCase().includes('name'));
+                    const urlCol = headers.findIndex(h => h.toLowerCase().includes('url'));
+                    const wcAfc1Col = headers.findIndex(h => h.includes('AFC Wildcard Game 1') || h.includes('Wildcard Game 1'));
+                    const wcAfc2Col = headers.findIndex(h => h.includes('AFC Wildcard Game 2') || h.includes('Wildcard Game 2'));
+                    const wcAfc3Col = headers.findIndex(h => h.includes('AFC Wildcard Game 3') || h.includes('Wildcard Game 3'));
+                    const wcNfc1Col = headers.findIndex(h => h.includes('NFC Wildcard Game 1') || h.includes('Wildcard Game 4'));
+                    const wcNfc2Col = headers.findIndex(h => h.includes('NFC Wildcard Game 2') || h.includes('Wildcard Game 5'));
+                    const wcNfc3Col = headers.findIndex(h => h.includes('NFC Wildcard Game 3') || h.includes('Wildcard Game 6'));
+                    const divAfc1Col = headers.findIndex(h => h.includes('AFC Divisional Game 1') || h.includes('Divisional Game 1'));
+                    const divAfc2Col = headers.findIndex(h => h.includes('AFC Divisional Game 2') || h.includes('Divisional Game 2'));
+                    const divNfc1Col = headers.findIndex(h => h.includes('NFC Divisional Game 1') || h.includes('Divisional Game 3'));
+                    const divNfc2Col = headers.findIndex(h => h.includes('NFC Divisional Game 2') || h.includes('Divisional Game 4'));
+                    const confAfcCol = headers.findIndex(h => h.includes('AFC Championship'));
+                    const confNfcCol = headers.findIndex(h => h.includes('NFC Championship'));
+                    const sbCol = headers.findIndex(h => h.includes('Super Bowl'));
+
+                    let imported = 0;
+                    let errors = [];
+
+                    // Process each row (skip header)
+                    for (let i = 1; i < lines.length; i++) {
+                        const line = lines[i].trim();
+                        if (!line) continue;
+
+                        const cols = parseCSVLine(line);
+
+                        const name = cols[nameCol]?.trim();
+                        if (!name) {
+                            errors.push(`Row ${i + 1}: Missing name`);
+                            continue;
+                        }
+
+                        const picks = {
+                            wc_afc_1: normalizeTeamName(cols[wcAfc1Col]),
+                            wc_afc_2: normalizeTeamName(cols[wcAfc2Col]),
+                            wc_afc_3: normalizeTeamName(cols[wcAfc3Col]),
+                            wc_nfc_1: normalizeTeamName(cols[wcNfc1Col]),
+                            wc_nfc_2: normalizeTeamName(cols[wcNfc2Col]),
+                            wc_nfc_3: normalizeTeamName(cols[wcNfc3Col]),
+                            div_afc_1: normalizeTeamName(cols[divAfc1Col]),
+                            div_afc_2: normalizeTeamName(cols[divAfc2Col]),
+                            div_nfc_1: normalizeTeamName(cols[divNfc1Col]),
+                            div_nfc_2: normalizeTeamName(cols[divNfc2Col]),
+                            conf_afc: normalizeTeamName(cols[confAfcCol]),
+                            conf_nfc: normalizeTeamName(cols[confNfcCol]),
+                            superbowl: normalizeTeamName(cols[sbCol])
+                        };
+
+                        // Validate required wildcard picks
+                        if (!picks.wc_afc_1 || !picks.wc_afc_2 || !picks.wc_afc_3 ||
+                            !picks.wc_nfc_1 || !picks.wc_nfc_2 || !picks.wc_nfc_3) {
+                            errors.push(`Row ${i + 1} (${name}): Missing wildcard picks`);
+                            continue;
+                        }
+
+                        brackets.push({
+                            name: name,
+                            url: cols[urlCol]?.trim() || 'Google Form Submission',
+                            picks: picks
+                        });
+
+                        imported++;
+                    }
+
+                    saveData();
+                    updateLeaderboard();
+
+                    let message = `<div class="success-message">Successfully imported ${imported} bracket(s)!`;
+                    if (errors.length > 0) {
+                        message += `<br><br><strong>Errors:</strong><br>${errors.join('<br>')}`;
+                    }
+                    message += '</div>';
+
+                    resultDiv.innerHTML = message;
+
+                    setTimeout(() => {
+                        resultDiv.innerHTML = '';
+                    }, 5000);
+
+                } catch (error) {
+                    resultDiv.innerHTML = `<div class="error-message">Error importing CSV: ${error.message}</div>`;
+                }
+            };
+
+            reader.readAsText(file);
+        }
+
+        function parseCSVLine(line) {
+            // Simple CSV parser that handles quoted fields
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current);
+
+            return result;
+        }
+
+        function normalizeTeamName(name) {
+            if (!name) return '';
+
+            const normalized = name.trim().toLowerCase();
+
+            // Map common variations to internal names
+            const teamMap = {
+                'chargers': 'chargers',
+                'patriots': 'patriots',
+                'bills': 'bills',
+                'jaguars': 'jaguars',
+                'jags': 'jaguars',
+                'texans': 'texans',
+                'steelers': 'steelers',
+                'broncos': 'broncos',
+                'packers': 'packers',
+                'bears': 'bears',
+                '49ers': 'fortyniners',
+                'fortyniners': 'fortyniners',
+                'niners': 'fortyniners',
+                'seahawks': 'seahawks',
+                'eagles': 'eagles',
+                'panthers': 'panthers',
+                'rams': 'rams'
+            };
+
+            return teamMap[normalized] || normalized;
+        }
+
+        async function clearAllData() {
+            if (confirm('Are you sure you want to clear ALL data? This cannot be undone!')) {
+                const response = await fetch('/api/admin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        password: ADMIN_PASSWORD,
+                        operation: 'clear'
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    await loadData();
+                    renderGamesForAdmin();
+                    alert('All data cleared!');
+                } else {
+                    alert(result.error || 'Failed to clear data');
+                }
+            }
+        }
+
+        // ===== UTILITY FUNCTIONS =====
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===== INITIALIZATION =====
+
+        // Load data from server on page load
+        loadData();
+    </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "name": "nfl-bracket-tracker",
+  "version": "1.0.0",
+  "description": "NFL Playoff Bracket Pool Tracker",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}
