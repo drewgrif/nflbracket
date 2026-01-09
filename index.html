@@ -197,11 +197,46 @@
             margin-top: 20px;
         }
 
+        .conference-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .conference-columns {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .conference-column {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+
+        .conference-header {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 15px;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
         .game-card {
             background: white;
             border: 2px solid #ddd;
             border-radius: 8px;
             padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .game-card:last-child {
+            margin-bottom: 0;
         }
 
         .game-title {
@@ -786,17 +821,6 @@
 
         function renderGamesForAdmin() {
             const container = document.getElementById('games-container');
-            let html = '';
-
-            // Define actual matchups
-            const wildcardGames = [
-                { id: 'wc_afc_1', title: 'AFC WC Game 1', teams: ['chargers', 'patriots'] },
-                { id: 'wc_afc_2', title: 'AFC WC Game 2', teams: ['bills', 'jaguars'] },
-                { id: 'wc_afc_3', title: 'AFC WC Game 3', teams: ['texans', 'steelers'] },
-                { id: 'wc_nfc_1', title: 'NFC WC Game 1', teams: ['packers', 'bears'] },
-                { id: 'wc_nfc_2', title: 'NFC WC Game 2', teams: ['fortyniners', 'eagles'] },
-                { id: 'wc_nfc_3', title: 'NFC WC Game 3', teams: ['panthers', 'rams'] }
-            ];
 
             // Team seeds for reseeding
             const teamSeeds = {
@@ -804,141 +828,66 @@
                 'seahawks': 1, 'bears': 2, 'eagles': 3, 'panthers': 4, 'rams': 5, 'fortyniners': 6, 'packers': 7
             };
 
-            // Render Wildcard Games
-            html += '<h4>Wildcard Round</h4>';
-            wildcardGames.forEach(game => {
-                const currentWinner = results[game.id] || null;
-                html += `
-                    <div class="game-card">
-                        <div class="game-title">${game.title}</div>
-                        ${game.teams.map(team => `
-                            <button
-                                class="team-button ${currentWinner === team ? 'selected' : ''}"
-                                onclick="selectWinner('${game.id}', '${team}')"
-                            >
-                                ${TEAM_NAMES[team] || team}
-                            </button>
-                        `).join('')}
-                    </div>
-                `;
-            });
-
-            // Get wildcard winners and calculate divisional matchups with reseeding
+            // Get wildcard winners
             const afcWildcardWinners = [results.wc_afc_1, results.wc_afc_2, results.wc_afc_3].filter(t => t);
             const nfcWildcardWinners = [results.wc_nfc_1, results.wc_nfc_2, results.wc_nfc_3].filter(t => t);
 
-            // ALWAYS show divisional round
-            html += '<h4 style="margin-top: 30px;">Divisional Round</h4>';
+            let afcHtml = '';
+            let nfcHtml = '';
 
-            // AFC Divisional
+            // === WILDCARD ROUND ===
+            afcHtml += '<h5 style="margin-top: 0;">Wildcard Round</h5>';
+            afcHtml += renderGame('wc_afc_1', 'WC Game 1', ['chargers', 'patriots'], teamSeeds);
+            afcHtml += renderGame('wc_afc_2', 'WC Game 2', ['bills', 'jaguars'], teamSeeds);
+            afcHtml += renderGame('wc_afc_3', 'WC Game 3', ['texans', 'steelers'], teamSeeds);
+
+            nfcHtml += '<h5 style="margin-top: 0;">Wildcard Round</h5>';
+            nfcHtml += renderGame('wc_nfc_1', 'WC Game 1', ['packers', 'bears'], teamSeeds);
+            nfcHtml += renderGame('wc_nfc_2', 'WC Game 2', ['fortyniners', 'eagles'], teamSeeds);
+            nfcHtml += renderGame('wc_nfc_3', 'WC Game 3', ['panthers', 'rams'], teamSeeds);
+
+            // === DIVISIONAL ROUND ===
+            afcHtml += '<h5 style="margin-top: 25px;">Divisional Round</h5>';
             if (afcWildcardWinners.length === 3) {
                 const afcTeams = ['broncos', ...afcWildcardWinners].sort((a, b) => teamSeeds[a] - teamSeeds[b]);
-                const afcDiv1Teams = [afcTeams[0], afcTeams[3]];
-                const afcDiv2Teams = [afcTeams[1], afcTeams[2]];
-
-                html += `
-                    <div class="game-card">
-                        <div class="game-title">AFC Div Game 1</div>
-                        ${afcDiv1Teams.map(team => `
-                            <button
-                                class="team-button ${results.div_afc_1 === team ? 'selected' : ''}"
-                                onclick="selectWinner('div_afc_1', '${team}')"
-                            >
-                                ${TEAM_NAMES[team] || team} (${teamSeeds[team]})
-                            </button>
-                        `).join('')}
-                    </div>
-                    <div class="game-card">
-                        <div class="game-title">AFC Div Game 2</div>
-                        ${afcDiv2Teams.map(team => `
-                            <button
-                                class="team-button ${results.div_afc_2 === team ? 'selected' : ''}"
-                                onclick="selectWinner('div_afc_2', '${team}')"
-                            >
-                                ${TEAM_NAMES[team] || team} (${teamSeeds[team]})
-                            </button>
-                        `).join('')}
-                    </div>
-                `;
+                afcHtml += renderGame('div_afc_1', 'Div Game 1', [afcTeams[0], afcTeams[3]], teamSeeds, true);
+                afcHtml += renderGame('div_afc_2', 'Div Game 2', [afcTeams[1], afcTeams[2]], teamSeeds, true);
             } else {
-                html += '<p style="color: #999; font-style: italic;">Mark all wildcard winners to see divisional matchups</p>';
+                afcHtml += '<p style="color: #999; font-style: italic;">Mark all wildcard winners</p>';
             }
 
-            // NFC Divisional
+            nfcHtml += '<h5 style="margin-top: 25px;">Divisional Round</h5>';
             if (nfcWildcardWinners.length === 3) {
                 const nfcTeams = ['seahawks', ...nfcWildcardWinners].sort((a, b) => teamSeeds[a] - teamSeeds[b]);
-                const nfcDiv1Teams = [nfcTeams[0], nfcTeams[3]];
-                const nfcDiv2Teams = [nfcTeams[1], nfcTeams[2]];
-
-                html += `
-                    <div class="game-card">
-                        <div class="game-title">NFC Div Game 1</div>
-                        ${nfcDiv1Teams.map(team => `
-                            <button
-                                class="team-button ${results.div_nfc_1 === team ? 'selected' : ''}"
-                                onclick="selectWinner('div_nfc_1', '${team}')"
-                            >
-                                ${TEAM_NAMES[team] || team} (${teamSeeds[team]})
-                            </button>
-                        `).join('')}
-                    </div>
-                    <div class="game-card">
-                        <div class="game-title">NFC Div Game 2</div>
-                        ${nfcDiv2Teams.map(team => `
-                            <button
-                                class="team-button ${results.div_nfc_2 === team ? 'selected' : ''}"
-                                onclick="selectWinner('div_nfc_2', '${team}')"
-                            >
-                                ${TEAM_NAMES[team] || team} (${teamSeeds[team]})
-                            </button>
-                        `).join('')}
-                    </div>
-                `;
-            } else if (afcWildcardWinners.length === 3) {
-                // AFC done but not NFC
-                html += '<p style="color: #999; font-style: italic;">Mark all NFC wildcard winners to see NFC divisional matchups</p>';
+                nfcHtml += renderGame('div_nfc_1', 'Div Game 1', [nfcTeams[0], nfcTeams[3]], teamSeeds, true);
+                nfcHtml += renderGame('div_nfc_2', 'Div Game 2', [nfcTeams[1], nfcTeams[2]], teamSeeds, true);
+            } else {
+                nfcHtml += '<p style="color: #999; font-style: italic;">Mark all wildcard winners</p>';
             }
 
-            // ALWAYS show Conference Championships
-            html += '<h4 style="margin-top: 30px;">Conference Championships</h4>';
-
+            // === CONFERENCE CHAMPIONSHIPS ===
+            afcHtml += '<h5 style="margin-top: 25px;">Conference Championship</h5>';
             if (results.div_afc_1 && results.div_afc_2) {
-                html += `
-                    <div class="game-card">
-                        <div class="game-title">AFC Championship</div>
-                        ${[results.div_afc_1, results.div_afc_2].map(team => `
-                            <button
-                                class="team-button ${results.conf_afc === team ? 'selected' : ''}"
-                                onclick="selectWinner('conf_afc', '${team}')"
-                            >
-                                ${TEAM_NAMES[team] || team}
-                            </button>
-                        `).join('')}
-                    </div>
-                `;
+                afcHtml += renderGame('conf_afc', 'AFC Championship', [results.div_afc_1, results.div_afc_2], teamSeeds);
             } else {
-                html += '<p style="color: #999; font-style: italic;">Mark AFC divisional winners to see AFC Championship</p>';
+                afcHtml += '<p style="color: #999; font-style: italic;">Mark divisional winners</p>';
             }
 
+            nfcHtml += '<h5 style="margin-top: 25px;">Conference Championship</h5>';
             if (results.div_nfc_1 && results.div_nfc_2) {
-                html += `
-                    <div class="game-card">
-                        <div class="game-title">NFC Championship</div>
-                        ${[results.div_nfc_1, results.div_nfc_2].map(team => `
-                            <button
-                                class="team-button ${results.conf_nfc === team ? 'selected' : ''}"
-                                onclick="selectWinner('conf_nfc', '${team}')"
-                            >
-                                ${TEAM_NAMES[team] || team}
-                            </button>
-                        `).join('')}
-                    </div>
-                `;
+                nfcHtml += renderGame('conf_nfc', 'NFC Championship', [results.div_nfc_1, results.div_nfc_2], teamSeeds);
             } else {
-                html += '<p style="color: #999; font-style: italic;">Mark NFC divisional winners to see NFC Championship</p>';
+                nfcHtml += '<p style="color: #999; font-style: italic;">Mark divisional winners</p>';
             }
 
-            // ALWAYS show Super Bowl
+            // Build the HTML with columns
+            let html = '<h4>Wildcard, Divisional & Conference Rounds</h4>';
+            html += '<div class="conference-columns">';
+            html += `<div class="conference-column"><div class="conference-header">AFC</div>${afcHtml}</div>`;
+            html += `<div class="conference-column"><div class="conference-header">NFC</div>${nfcHtml}</div>`;
+            html += '</div>';
+
+            // === SUPER BOWL (full width) ===
             html += '<h4 style="margin-top: 30px;">Super Bowl</h4>';
             if (results.conf_afc && results.conf_nfc) {
                 html += `
@@ -973,6 +922,23 @@
             }
 
             container.innerHTML = html;
+        }
+
+        function renderGame(gameId, title, teams, teamSeeds, showSeeds = false) {
+            const currentWinner = results[gameId] || null;
+            return `
+                <div class="game-card">
+                    <div class="game-title">${title}</div>
+                    ${teams.map(team => `
+                        <button
+                            class="team-button ${currentWinner === team ? 'selected' : ''}"
+                            onclick="selectWinner('${gameId}', '${team}')"
+                        >
+                            ${TEAM_NAMES[team] || team}${showSeeds ? ` (${teamSeeds[team]})` : ''}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
         }
 
         function updateSBActualTotal(value) {
