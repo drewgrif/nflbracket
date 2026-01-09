@@ -880,18 +880,17 @@
             }
 
             // Build the HTML with columns
-            let html = '<h4>Wildcard, Divisional & Conference Rounds</h4>';
-            html += '<div class="conference-columns">';
+            let html = '<div class="conference-columns">';
             html += `<div class="conference-column"><div class="conference-header">AFC</div>${afcHtml}</div>`;
             html += `<div class="conference-column"><div class="conference-header">NFC</div>${nfcHtml}</div>`;
             html += '</div>';
 
             // === SUPER BOWL (full width) ===
-            html += '<h4 style="margin-top: 30px;">Super Bowl</h4>';
+            html += '<div style="margin-top: 40px;">';
+            html += '<h4 style="text-align: center; color: #667eea; font-size: 1.5em; margin-bottom: 20px;">Super Bowl</h4>';
             if (results.conf_afc && results.conf_nfc) {
                 html += `
                     <div class="game-card">
-                        <div class="game-title">Super Bowl</div>
                         ${[results.conf_afc, results.conf_nfc].map(team => `
                             <button
                                 class="team-button ${results.superbowl === team ? 'selected' : ''}"
@@ -902,7 +901,7 @@
                         `).join('')}
                     </div>
                     <div class="game-card" style="margin-top: 15px;">
-                        <div class="game-title">Super Bowl Total Points (Tiebreaker)</div>
+                        <div class="game-title">Total Points (Tiebreaker)</div>
                         <input
                             type="number"
                             id="sb-actual-total"
@@ -919,6 +918,7 @@
             } else {
                 html += '<p style="color: #999; font-style: italic;">Mark conference champions to see Super Bowl matchup</p>';
             }
+            html += '</div>'; // Close Super Bowl wrapper
 
             container.innerHTML = html;
         }
