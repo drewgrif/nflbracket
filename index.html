@@ -604,13 +604,71 @@
                         <td>${rank}</td>
                         <td>${escapeHtml(bracket.name)}</td>
                         <td>${bracket.score} points</td>
-                        <td><a href="${escapeHtml(bracket.url)}" target="_blank" class="bracket-link">View Bracket</a></td>
+                        <td><button onclick="viewBracketPicks('${escapeHtml(bracket.name).replace(/'/g, "\\'")}', ${index})" class="bracket-link" style="background: none; border: none; color: #0066cc; cursor: pointer; text-decoration: underline; font-size: 14px;">View Picks</button></td>
                     </tr>
                 `;
             });
 
             html += '</tbody></table>';
             container.innerHTML = html;
+        }
+
+        function viewBracketPicks(name, index) {
+            // Find the bracket in the scored list
+            const scored = brackets.map(bracket => {
+                const { score, correct, incorrect } = calculateScore(bracket.picks);
+                return { ...bracket, score, correct, incorrect };
+            });
+            scored.sort((a, b) => b.score - a.score);
+
+            const bracket = scored[index];
+            if (!bracket) {
+                alert('Bracket not found');
+                return;
+            }
+
+            const picks = bracket.picks;
+
+            // Team display names
+            const teamNames = {
+                'chargers': 'Chargers', 'patriots': 'Patriots', 'bills': 'Bills',
+                'jaguars': 'Jaguars', 'texans': 'Texans', 'steelers': 'Steelers',
+                'broncos': 'Broncos', 'packers': 'Packers', 'bears': 'Bears',
+                'fortyniners': '49ers', 'seahawks': 'Seahawks', 'eagles': 'Eagles',
+                'panthers': 'Panthers', 'rams': 'Rams'
+            };
+
+            const getTeamName = (team) => teamNames[team] || team;
+            const isCorrect = (gameId) => {
+                if (!results[gameId]) return '';
+                return bracket.correct.includes(gameId) ? ' ✓' : ' ✗';
+            };
+
+            let message = `${name}'s Picks\n`;
+            message += `Score: ${bracket.score} points\n\n`;
+
+            message += '=== WILDCARD ROUND ===\n';
+            if (picks.wc_afc_1) message += `AFC Game 1: ${getTeamName(picks.wc_afc_1)}${isCorrect('wc_afc_1')}\n`;
+            if (picks.wc_afc_2) message += `AFC Game 2: ${getTeamName(picks.wc_afc_2)}${isCorrect('wc_afc_2')}\n`;
+            if (picks.wc_afc_3) message += `AFC Game 3: ${getTeamName(picks.wc_afc_3)}${isCorrect('wc_afc_3')}\n`;
+            if (picks.wc_nfc_1) message += `NFC Game 1: ${getTeamName(picks.wc_nfc_1)}${isCorrect('wc_nfc_1')}\n`;
+            if (picks.wc_nfc_2) message += `NFC Game 2: ${getTeamName(picks.wc_nfc_2)}${isCorrect('wc_nfc_2')}\n`;
+            if (picks.wc_nfc_3) message += `NFC Game 3: ${getTeamName(picks.wc_nfc_3)}${isCorrect('wc_nfc_3')}\n`;
+
+            message += '\n=== DIVISIONAL ROUND ===\n';
+            if (picks.div_afc_1) message += `AFC Game 1: ${getTeamName(picks.div_afc_1)}${isCorrect('div_afc_1')}\n`;
+            if (picks.div_afc_2) message += `AFC Game 2: ${getTeamName(picks.div_afc_2)}${isCorrect('div_afc_2')}\n`;
+            if (picks.div_nfc_1) message += `NFC Game 1: ${getTeamName(picks.div_nfc_1)}${isCorrect('div_nfc_1')}\n`;
+            if (picks.div_nfc_2) message += `NFC Game 2: ${getTeamName(picks.div_nfc_2)}${isCorrect('div_nfc_2')}\n`;
+
+            message += '\n=== CONFERENCE CHAMPIONSHIPS ===\n';
+            if (picks.conf_afc) message += `AFC: ${getTeamName(picks.conf_afc)}${isCorrect('conf_afc')}\n`;
+            if (picks.conf_nfc) message += `NFC: ${getTeamName(picks.conf_nfc)}${isCorrect('conf_nfc')}\n`;
+
+            message += '\n=== SUPER BOWL ===\n';
+            if (picks.superbowl) message += `Winner: ${getTeamName(picks.superbowl)}${isCorrect('superbowl')}\n`;
+
+            alert(message);
         }
 
         // ===== PUBLIC BRACKET SUBMISSION =====
