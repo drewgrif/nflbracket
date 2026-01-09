@@ -47,6 +47,39 @@ export default async (req, context) => {
       });
     }
 
+    if (input.operation === "delete") {
+      // Delete a specific bracket by name
+      if (!input.name) {
+        return new Response(JSON.stringify({ error: "Name is required for delete operation" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
+
+      // Get current data
+      let data = await store.get("data", { type: "json" });
+      if (!data) {
+        data = { brackets: [], results: {} };
+      }
+
+      // Filter out the bracket with the specified name
+      const originalLength = data.brackets.length;
+      data.brackets = data.brackets.filter(b => b.name !== input.name);
+
+      if (data.brackets.length === originalLength) {
+        return new Response(JSON.stringify({ error: "Bracket not found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
+
+      // Save updated data
+      await store.setJSON("data", data);
+      return new Response(JSON.stringify({ success: true, message: "Bracket deleted successfully" }), {
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
     return new Response(JSON.stringify({ error: "Unknown operation" }), {
       status: 400,
       headers: { "Content-Type": "application/json" }
