@@ -1,7 +1,7 @@
 import { getStore } from "@netlify/blobs";
 
 // CHANGE THIS PASSWORD TO YOUR OWN
-const ADMIN_PASSWORD = "admin123";
+const ADMIN_PASSWORD = "MY-BRACKET-IS-BEST";
 
 export default async (req, context) => {
   const store = getStore("brackets");
