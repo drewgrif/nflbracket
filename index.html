@@ -130,6 +130,38 @@
         }
 
         /* Leaderboard */
+        .leaderboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #d4edda;
+            color: #155724;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #28a745;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
         .leaderboard-table {
             width: 100%;
             border-collapse: collapse;
@@ -311,7 +343,13 @@
 
         <!-- Leaderboard -->
         <div class="section">
-            <h2 class="section-title">Leaderboard</h2>
+            <div class="leaderboard-header">
+                <h2 class="section-title" style="margin: 0;">Leaderboard</h2>
+                <div class="live-badge">
+                    <div class="live-dot"></div>
+                    <span>Live Updates</span>
+                </div>
+            </div>
             <div id="leaderboard-container">
                 <div class="empty-state">No brackets submitted yet. Be the first!</div>
             </div>
@@ -810,11 +848,20 @@
         });
 
         async function saveResultsToServer() {
-            const result = await saveResults(ADMIN_PASSWORD);
-            if (result.success) {
-                alert('Results saved successfully!');
-            } else {
-                alert(result.error || 'Failed to save results');
+            try {
+                console.log('Saving results:', results);
+                const result = await saveResults(ADMIN_PASSWORD);
+                console.log('Save result:', result);
+
+                if (result && result.success) {
+                    alert('Results saved successfully!');
+                    await loadData(); // Reload to ensure we have latest
+                } else {
+                    alert(result?.error || 'Failed to save results');
+                }
+            } catch (error) {
+                console.error('Error in saveResultsToServer:', error);
+                alert('Error saving results: ' + error.message);
             }
         }
 
@@ -950,12 +997,6 @@
             renderGamesForAdmin();
             // Auto-update leaderboard as results change
             updateLeaderboard();
-        }
-
-        function saveResults() {
-            saveData();
-            updateLeaderboard();
-            alert('Results saved successfully!');
         }
 
         // ===== DATA MANAGEMENT =====
@@ -1324,6 +1365,11 @@
 
         // Load data from server on page load
         loadData();
+
+        // Auto-refresh data every 30 seconds so viewers see live updates
+        setInterval(() => {
+            loadData();
+        }, 30000); // 30 seconds
     </script>
 </body>
 </html>
