@@ -197,7 +197,7 @@
 <body>
     <div class="container">
         <h1>🏈 NFL Playoff Bracket Picker</h1>
-        <p class="subtitle">Make your picks and download your bracket!</p>
+        <p class="subtitle">Make your picks and submit your bracket!</p>
 
         <div class="instructions">
             <strong>How to use:</strong>
@@ -206,8 +206,8 @@
                 <li>Click on teams to select winners for each game</li>
                 <li>The bracket automatically advances teams to the next rounds with proper reseeding</li>
                 <li>Continue selecting winners through the divisional, conference, and Super Bowl rounds</li>
-                <li>Click "Download My Bracket" when complete</li>
-                <li>Upload your downloaded file on the tracker page to submit</li>
+                <li>Enter your Super Bowl total points tiebreaker</li>
+                <li>Click "Submit My Bracket" when complete</li>
             </ol>
         </div>
 
@@ -263,7 +263,8 @@
         </div>
 
         <div class="actions">
-            <button onclick="downloadBracket()" id="download-btn">Download My Bracket</button>
+            <button onclick="submitBracket()" id="submit-btn" style="background: #28a745;">Submit My Bracket</button>
+            <button onclick="downloadBracket()" id="download-btn" style="background: #6c757d;">Download Backup</button>
             <button onclick="resetBracket()" style="background: #6c757d;">Reset All Picks</button>
         </div>
 
@@ -530,6 +531,75 @@
             setTimeout(() => {
                 messageDiv.style.display = 'none';
             }, 5000);
+        }
+
+        async function submitBracket() {
+            const name = document.getElementById('participant-name').value.trim();
+            const sbTotalPoints = document.getElementById('sb-total-points').value;
+            const messageDiv = document.getElementById('message');
+
+            if (!name) {
+                messageDiv.className = 'message error';
+                messageDiv.textContent = 'Please enter your name first!';
+                messageDiv.style.display = 'block';
+                return;
+            }
+
+            // Check if all wildcard picks are made
+            const requiredWildcard = ['wc_afc_1', 'wc_afc_2', 'wc_afc_3', 'wc_nfc_1', 'wc_nfc_2', 'wc_nfc_3'];
+            for (let key of requiredWildcard) {
+                if (!picks[key]) {
+                    messageDiv.className = 'message error';
+                    messageDiv.textContent = 'Please complete all wildcard picks!';
+                    messageDiv.style.display = 'block';
+                    return;
+                }
+            }
+
+            if (!sbTotalPoints || sbTotalPoints < 0) {
+                messageDiv.className = 'message error';
+                messageDiv.textContent = 'Please enter your Super Bowl total points tiebreaker!';
+                messageDiv.style.display = 'block';
+                return;
+            }
+
+            // Disable submit button while submitting
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+
+            try {
+                const response = await fetch('/api/data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        picks: picks,
+                        sbTotalPoints: parseInt(sbTotalPoints)
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    messageDiv.className = 'message success';
+                    messageDiv.textContent = `✓ Bracket submitted successfully! You're all set for the playoffs.`;
+                    messageDiv.style.display = 'block';
+
+                    // Optionally clear form or disable further edits
+                    submitBtn.textContent = 'Submitted!';
+                } else {
+                    throw new Error(result.error || 'Failed to submit bracket');
+                }
+            } catch (error) {
+                messageDiv.className = 'message error';
+                messageDiv.textContent = `✗ Error: ${error.message}. Try downloading your bracket as backup.`;
+                messageDiv.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit My Bracket';
+            }
         }
 
         function resetBracket() {

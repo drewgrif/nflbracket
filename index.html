@@ -329,16 +329,19 @@
 
         <!-- Submit Bracket -->
         <div class="section">
-            <h2 class="section-title">Submit Your Bracket</h2>
+            <h2 class="section-title">Make Your Picks</h2>
             <p style="margin-bottom: 15px; color: #666;">
-                Fill out your bracket using the <strong>bracket picker</strong> tool, download your file, then upload it here.
+                Use the <strong><a href="bracket-picker.html" style="color: #667eea;">bracket picker</a></strong> to make your picks and submit directly!
             </p>
-            <div class="form-group">
-                <label for="public-bracket-upload">Upload Your Bracket File (.json)</label>
-                <input type="file" id="public-bracket-upload" accept=".json" style="margin-top: 10px;">
-            </div>
-            <button onclick="submitBracketFile()" style="margin-top: 10px;">Submit My Bracket</button>
-            <div id="public-submission-message"></div>
+            <details style="margin-top: 20px;">
+                <summary style="cursor: pointer; color: #667eea; font-weight: 600;">Or upload a bracket file (backup option)</summary>
+                <div class="form-group" style="margin-top: 15px;">
+                    <label for="public-bracket-upload">Upload Your Bracket File (.json)</label>
+                    <input type="file" id="public-bracket-upload" accept=".json" style="margin-top: 10px;">
+                </div>
+                <button onclick="submitBracketFile()" style="margin-top: 10px;">Submit My Bracket</button>
+                <div id="public-submission-message"></div>
+            </details>
         </div>
 
         <!-- Leaderboard -->
@@ -383,7 +386,8 @@
                         Scores update in real-time as you mark games. Click "Save Results" to persist changes.
                     </p>
                     <div id="games-container" class="game-picker"></div>
-                    <button onclick="saveResultsToServer()" style="margin-top: 20px;">Save Results</button>
+                    <button id="save-results-btn" onclick="saveResultsToServer()" style="margin-top: 20px;">Save Results</button>
+                    <div id="save-results-message" style="margin-top: 10px;"></div>
                 </div>
 
                 <!-- Manage Brackets -->
@@ -847,21 +851,45 @@
             }
         });
 
+        let isSaving = false;
+
         async function saveResultsToServer() {
+            if (isSaving) {
+                console.log('Save already in progress, skipping...');
+                return;
+            }
+
+            const saveBtn = document.getElementById('save-results-btn');
+            const messageDiv = document.getElementById('save-results-message');
+
             try {
+                isSaving = true;
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Saving...';
+                messageDiv.innerHTML = '';
+
                 console.log('Saving results:', results);
                 const result = await saveResults(ADMIN_PASSWORD);
                 console.log('Save result:', result);
 
                 if (result && result.success) {
-                    alert('Results saved successfully!');
+                    messageDiv.innerHTML = '<div class="success-message">✓ Results saved successfully!</div>';
                     await loadData(); // Reload to ensure we have latest
+
+                    // Auto-hide success message after 3 seconds
+                    setTimeout(() => {
+                        messageDiv.innerHTML = '';
+                    }, 3000);
                 } else {
-                    alert(result?.error || 'Failed to save results');
+                    messageDiv.innerHTML = `<div class="error-message">✗ ${result?.error || 'Failed to save results'}</div>`;
                 }
             } catch (error) {
                 console.error('Error in saveResultsToServer:', error);
-                alert('Error saving results: ' + error.message);
+                messageDiv.innerHTML = `<div class="error-message">✗ Error saving results: ${error.message}</div>`;
+            } finally {
+                isSaving = false;
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Results';
             }
         }
 
