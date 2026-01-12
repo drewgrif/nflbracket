@@ -626,9 +626,29 @@
             let correct = [];
             let incorrect = [];
 
+            // Point values by round
+            const pointValues = {
+                'wc_': 1,      // Wildcard games
+                'div_': 2,     // Divisional games
+                'conf_': 4,    // Conference championship games
+                'superbowl': 8 // Super Bowl
+            };
+
             for (let gameId in results) {
                 if (picks[gameId] === results[gameId]) {
-                    score += 1;
+                    // Determine points based on game round
+                    let points = 1; // default
+                    if (gameId === 'superbowl') {
+                        points = pointValues['superbowl'];
+                    } else if (gameId.startsWith('wc_')) {
+                        points = pointValues['wc_'];
+                    } else if (gameId.startsWith('div_')) {
+                        points = pointValues['div_'];
+                    } else if (gameId.startsWith('conf_')) {
+                        points = pointValues['conf_'];
+                    }
+
+                    score += points;
                     correct.push(gameId);
                 } else if (picks[gameId]) {
                     incorrect.push(gameId);
