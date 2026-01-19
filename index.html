@@ -835,29 +835,41 @@
 
         // ===== ADMIN PANEL =====
 
-        // CHANGE THIS PASSWORD TO YOUR OWN
-        const ADMIN_PASSWORD = 'MY-BRACKET-IS-BEST';
+        let adminPassword = null;
 
         document.getElementById('admin-toggle-btn').addEventListener('click', function() {
             const adminSection = document.getElementById('admin-section');
             adminSection.style.display = adminSection.style.display === 'none' ? 'block' : 'none';
         });
 
-        function checkAdminPassword() {
+        async function checkAdminPassword() {
             const passwordInput = document.getElementById('admin-password');
             const messageDiv = document.getElementById('admin-login-message');
             const password = passwordInput.value;
 
-            if (password === ADMIN_PASSWORD) {
-                // Hide login form, show admin content
-                document.getElementById('admin-login').style.display = 'none';
-                document.getElementById('admin-content').classList.remove('hidden');
-                adminAuthenticated = true;
-                renderGamesForAdmin();
-                renderBracketsList();
-            } else {
-                messageDiv.innerHTML = '<div class="error-message">Incorrect password</div>';
-                passwordInput.value = '';
+            try {
+                const response = await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                if (response.ok) {
+                    adminPassword = password;
+                    document.getElementById('admin-login').style.display = 'none';
+                    document.getElementById('admin-content').classList.remove('hidden');
+                    adminAuthenticated = true;
+                    renderGamesForAdmin();
+                    renderBracketsList();
+                } else {
+                    messageDiv.innerHTML = '<div class="error-message">Incorrect password</div>';
+                    passwordInput.value = '';
+                    setTimeout(() => {
+                        messageDiv.innerHTML = '';
+                    }, 3000);
+                }
+            } catch (error) {
+                messageDiv.innerHTML = '<div class="error-message">Connection error</div>';
                 setTimeout(() => {
                     messageDiv.innerHTML = '';
                 }, 3000);
@@ -889,7 +901,7 @@
                 messageDiv.innerHTML = '';
 
                 console.log('Saving results:', results);
-                const result = await saveResults(ADMIN_PASSWORD);
+                const result = await saveResults(adminPassword);
                 console.log('Save result:', result);
 
                 if (result && result.success) {
@@ -1081,7 +1093,7 @@
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            password: ADMIN_PASSWORD,
+                            password: adminPassword,
                             operation: 'import',
                             data: {
                                 brackets: data.brackets || [],
@@ -1322,7 +1334,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        password: ADMIN_PASSWORD,
+                        password: adminPassword,
                         operation: 'clear'
                     })
                 });
@@ -1350,7 +1362,7 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    password: ADMIN_PASSWORD,
+                    password: adminPassword,
                     operation: 'delete',
                     name: name
                 })

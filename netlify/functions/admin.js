@@ -1,8 +1,5 @@
 import { getStore } from "@netlify/blobs";
 
-// CHANGE THIS PASSWORD TO YOUR OWN
-const ADMIN_PASSWORD = "MY-BRACKET-IS-BEST";
-
 export default async (req, context) => {
   const store = getStore("brackets");
 
@@ -16,9 +13,10 @@ export default async (req, context) => {
 
   try {
     const input = await req.json();
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
     // Verify admin password
-    if (!input.password || input.password !== ADMIN_PASSWORD) {
+    if (!ADMIN_PASSWORD || !input.password || input.password !== ADMIN_PASSWORD) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json" }
