@@ -226,18 +226,9 @@
         <!-- Submit Bracket -->
         <div class="section">
             <h2 class="section-title">Make Your Picks</h2>
-            <p style="margin-bottom: 15px; color: #666;">
+            <p style="color: #666;">
                 Use the <strong><a href="bracket-picker.html" style="color: #667eea;">bracket picker</a></strong> to make your picks and submit directly!
             </p>
-            <details style="margin-top: 20px;">
-                <summary style="cursor: pointer; color: #667eea; font-weight: 600;">Or upload a bracket file (backup option)</summary>
-                <div class="form-group" style="margin-top: 15px;">
-                    <label for="public-bracket-upload">Upload Your Bracket File (.json)</label>
-                    <input type="file" id="public-bracket-upload" accept=".json" style="margin-top: 10px;">
-                </div>
-                <button onclick="submitBracketFile()" style="margin-top: 10px;">Submit My Bracket</button>
-                <div id="public-submission-message"></div>
-            </details>
         </div>
 
         <!-- Leaderboard -->
@@ -474,61 +465,6 @@
             }
 
             alert(message);
-        }
-
-        // ===== PUBLIC BRACKET SUBMISSION =====
-
-        async function submitBracketFile() {
-            const fileInput = document.getElementById('public-bracket-upload');
-            const messageDiv = document.getElementById('public-submission-message');
-            const file = fileInput.files[0];
-
-            if (!file) {
-                messageDiv.innerHTML = '<div class="error-message">Please select a bracket file to upload</div>';
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-
-                    if (!data.name || !data.picks) {
-                        messageDiv.innerHTML = '<div class="error-message">Invalid bracket file format</div>';
-                        return;
-                    }
-
-                    const response = await fetch('/api/data', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            name: data.name,
-                            picks: data.picks,
-                            sbTotalPoints: data.sbTotalPoints || 0
-                        })
-                    });
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        messageDiv.innerHTML = '<div class="success-message">Your bracket has been submitted successfully!</div>';
-                        await loadData();
-                    } else {
-                        messageDiv.innerHTML = `<div class="error-message">${result.error || 'Failed to submit bracket'}</div>`;
-                    }
-
-                    fileInput.value = '';
-
-                    setTimeout(() => {
-                        messageDiv.innerHTML = '';
-                    }, 5000);
-
-                } catch (error) {
-                    messageDiv.innerHTML = `<div class="error-message">Error reading file: ${error.message}</div>`;
-                }
-            };
-
-            reader.readAsText(file);
         }
 
         // ===== UTILITY =====
