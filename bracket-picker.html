@@ -192,86 +192,114 @@
             margin-bottom: 30px;
             border-left: 4px solid #667eea;
         }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🏈 NFL Playoff Bracket Picker</h1>
+        <a href="index.html" class="back-link">&larr; Back to Leaderboard</a>
+
+        <h1>NFL Playoff Bracket Picker</h1>
         <p class="subtitle">Make your picks and submit your bracket!</p>
 
-        <div class="instructions">
-            <strong>How to use:</strong>
-            <ol style="margin-left: 20px; margin-top: 10px;">
-                <li>Enter your name</li>
-                <li>Click on teams to select winners for each game</li>
-                <li>The bracket automatically advances teams to the next rounds with proper reseeding</li>
-                <li>Continue selecting winners through the divisional, conference, and Super Bowl rounds</li>
-                <li>Enter your Super Bowl total points tiebreaker</li>
-                <li>Click "Submit My Bracket" when complete</li>
-            </ol>
-        </div>
+        <div id="loading" class="loading">Loading teams...</div>
 
-        <div class="name-section">
-            <input type="text" id="participant-name" placeholder="Enter your name" required />
-        </div>
-
-        <div class="round-title" style="margin-top: 30px;">Wildcard Round</div>
-
-        <div class="bracket-container">
-            <div class="conference">
-                <div class="conference-title">AFC</div>
-                <div id="wildcard-afc"></div>
+        <div id="bracket-content" style="display: none;">
+            <div class="instructions">
+                <strong>How to use:</strong>
+                <ol style="margin-left: 20px; margin-top: 10px;">
+                    <li>Enter your name</li>
+                    <li>Click on teams to select winners for each game</li>
+                    <li>The bracket automatically advances teams to the next rounds with proper reseeding</li>
+                    <li>Continue selecting winners through the divisional, conference, and Super Bowl rounds</li>
+                    <li>Enter your Super Bowl total points tiebreaker</li>
+                    <li>Click "Submit My Bracket" when complete</li>
+                </ol>
             </div>
 
-            <div class="conference">
-                <div class="conference-title">NFC</div>
-                <div id="wildcard-nfc"></div>
-            </div>
-        </div>
-
-        <div class="bracket-container">
-            <div class="conference">
-                <div class="conference-title">AFC</div>
-                <div id="afc-bracket"></div>
+            <div class="name-section">
+                <input type="text" id="participant-name" placeholder="Enter your name" required />
             </div>
 
-            <div class="conference">
-                <div class="conference-title">NFC</div>
-                <div id="nfc-bracket"></div>
+            <div class="round-title" style="margin-top: 30px;">Wildcard Round</div>
+
+            <div class="bracket-container">
+                <div class="conference">
+                    <div class="conference-title">AFC</div>
+                    <div id="wildcard-afc"></div>
+                </div>
+
+                <div class="conference">
+                    <div class="conference-title">NFC</div>
+                    <div id="wildcard-nfc"></div>
+                </div>
             </div>
-        </div>
 
-        <div class="superbowl-section">
-            <h2>Super Bowl</h2>
-            <div id="superbowl-matchup"></div>
-            <div class="champion-display" id="champion-display">Select your champion above ⬆️</div>
-        </div>
+            <div class="bracket-container">
+                <div class="conference">
+                    <div class="conference-title">AFC</div>
+                    <div id="afc-bracket"></div>
+                </div>
 
-        <div class="name-section" style="margin-top: 30px;">
-            <label for="sb-total-points" style="display: block; margin-bottom: 10px; font-weight: 600; color: #333;">
-                Tiebreaker: Total Points Scored in Super Bowl
-            </label>
-            <input
-                type="number"
-                id="sb-total-points"
-                placeholder="Enter total points (e.g., 48)"
-                min="0"
-                max="150"
-                style="width: 300px;"
-            />
-            <div style="color: #666; font-size: 0.9em; margin-top: 5px;">Used to break ties if multiple people have the same score</div>
-        </div>
+                <div class="conference">
+                    <div class="conference-title">NFC</div>
+                    <div id="nfc-bracket"></div>
+                </div>
+            </div>
 
-        <div class="actions">
-            <button onclick="submitBracket()" id="submit-btn" style="background: #28a745;">Submit My Bracket</button>
-            <button onclick="downloadBracket()" id="download-btn" style="background: #6c757d;">Download Backup</button>
-            <button onclick="resetBracket()" style="background: #6c757d;">Reset All Picks</button>
-        </div>
+            <div class="superbowl-section">
+                <h2>Super Bowl</h2>
+                <div id="superbowl-matchup"></div>
+                <div class="champion-display" id="champion-display">Select your champion above</div>
+            </div>
 
-        <div class="message" id="message"></div>
+            <div class="name-section" style="margin-top: 30px;">
+                <label for="sb-total-points" style="display: block; margin-bottom: 10px; font-weight: 600; color: #333;">
+                    Tiebreaker: Total Points Scored in Super Bowl
+                </label>
+                <input
+                    type="number"
+                    id="sb-total-points"
+                    placeholder="Enter total points (e.g., 48)"
+                    min="0"
+                    max="150"
+                    style="width: 300px;"
+                />
+                <div style="color: #666; font-size: 0.9em; margin-top: 5px;">Used to break ties if multiple people have the same score</div>
+            </div>
+
+            <div class="actions">
+                <button onclick="submitBracket()" id="submit-btn" style="background: #28a745;">Submit My Bracket</button>
+                <button onclick="downloadBracket()" id="download-btn" style="background: #6c757d;">Download Backup</button>
+                <button onclick="resetBracket()" style="background: #6c757d;">Reset All Picks</button>
+            </div>
+
+            <div class="message" id="message"></div>
+        </div>
     </div>
 
     <script>
+        // ===== STATE =====
+        let config = { afc: [], nfc: [] };
+        let teamSeeds = {};
+
         const picks = {
             wc_afc_1: null, wc_afc_2: null, wc_afc_3: null,
             wc_nfc_1: null, wc_nfc_2: null, wc_nfc_3: null,
@@ -281,35 +309,66 @@
             superbowl: null
         };
 
-        // Team seeds (1 = best, 7 = worst in each conference)
-        const teamSeeds = {
-            // AFC
-            'broncos': 1,
-            'patriots': 2,
-            'jaguars': 3,
-            'steelers': 4,
-            'texans': 5,
-            'bills': 6,
-            'chargers': 7,
-            // NFC
-            'seahawks': 1,
-            'bears': 2,
-            'eagles': 3,
-            'panthers': 4,
-            'rams': 5,
-            'fortyniners': 6,
-            '49ers': 6,
-            'packers': 7
-        };
+        // ===== CONFIG LOADING =====
 
-        const wildcardMatchups = [
-            { id: 'wc_afc_1', teams: ['Chargers', 'Patriots'], conf: 'AFC' },
-            { id: 'wc_afc_2', teams: ['Bills', 'Jaguars'], conf: 'AFC' },
-            { id: 'wc_afc_3', teams: ['Texans', 'Steelers'], conf: 'AFC' },
-            { id: 'wc_nfc_1', teams: ['Packers', 'Bears'], conf: 'NFC' },
-            { id: 'wc_nfc_2', teams: ['49ers', 'Eagles'], conf: 'NFC' },
-            { id: 'wc_nfc_3', teams: ['Panthers', 'Rams'], conf: 'NFC' }
-        ];
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const data = await response.json();
+                config = data.config || { afc: [], nfc: [] };
+                buildTeamSeeds();
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('bracket-content').style.display = 'block';
+                init();
+            } catch (error) {
+                console.error('Failed to load config:', error);
+                document.getElementById('loading').textContent = 'Failed to load teams. Please refresh.';
+            }
+        }
+
+        function buildTeamSeeds() {
+            teamSeeds = {};
+            config.afc.forEach((name, i) => {
+                teamSeeds[getTeamKey(name)] = i + 1;
+            });
+            config.nfc.forEach((name, i) => {
+                teamSeeds[getTeamKey(name)] = i + 1;
+            });
+        }
+
+        function getTeamKey(teamName) {
+            return teamName.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+        }
+
+        function getTeamDisplay(key) {
+            // Find display name from config
+            for (const name of config.afc) {
+                if (getTeamKey(name) === key) return name;
+            }
+            for (const name of config.nfc) {
+                if (getTeamKey(name) === key) return name;
+            }
+            return key;
+        }
+
+        // ===== WILDCARD MATCHUPS =====
+        // NFL Rules: #2 vs #7, #3 vs #6, #4 vs #5
+
+        function getWildcardMatchups() {
+            const afcMatchups = [
+                { id: 'wc_afc_1', teams: [config.afc[1], config.afc[6]], title: '#2 vs #7' },
+                { id: 'wc_afc_2', teams: [config.afc[2], config.afc[5]], title: '#3 vs #6' },
+                { id: 'wc_afc_3', teams: [config.afc[3], config.afc[4]], title: '#4 vs #5' }
+            ];
+            const nfcMatchups = [
+                { id: 'wc_nfc_1', teams: [config.nfc[1], config.nfc[6]], title: '#2 vs #7' },
+                { id: 'wc_nfc_2', teams: [config.nfc[2], config.nfc[5]], title: '#3 vs #6' },
+                { id: 'wc_nfc_3', teams: [config.nfc[3], config.nfc[4]], title: '#4 vs #5' }
+            ];
+            return { afc: afcMatchups, nfc: nfcMatchups };
+        }
+
+        // ===== BRACKET RENDERING =====
 
         function init() {
             renderWildcard();
@@ -317,71 +376,80 @@
         }
 
         function renderWildcard() {
+            const { afc: afcMatchups, nfc: nfcMatchups } = getWildcardMatchups();
+
             const afcContainer = document.getElementById('wildcard-afc');
             const nfcContainer = document.getElementById('wildcard-nfc');
 
-            const afcMatchups = wildcardMatchups.filter(m => m.conf === 'AFC');
-            const nfcMatchups = wildcardMatchups.filter(m => m.conf === 'NFC');
-
-            afcContainer.innerHTML = afcMatchups.map(matchup => `
+            afcContainer.innerHTML = afcMatchups.map((matchup, i) => `
                 <div class="matchup">
-                    <div style="font-weight: 600; margin-bottom: 10px;">Game ${matchup.id.slice(-1)}</div>
-                    ${matchup.teams.map(team => `
-                        <div class="team ${picks[matchup.id] === team.toLowerCase() ? 'selected' : ''}"
-                             onclick="selectWildcard('${matchup.id}', '${team.toLowerCase()}')">
-                            ${team}
-                        </div>
-                    `).join('')}
+                    <div style="font-weight: 600; margin-bottom: 10px;">Game ${i + 1} (${matchup.title})</div>
+                    ${matchup.teams.map(team => {
+                        const key = getTeamKey(team);
+                        return `
+                            <div class="team ${picks[matchup.id] === key ? 'selected' : ''}"
+                                 onclick="selectWildcard('${matchup.id}', '${key}')">
+                                ${team}
+                            </div>
+                        `;
+                    }).join('')}
                 </div>
             `).join('');
 
-            nfcContainer.innerHTML = nfcMatchups.map(matchup => `
+            nfcContainer.innerHTML = nfcMatchups.map((matchup, i) => `
                 <div class="matchup">
-                    <div style="font-weight: 600; margin-bottom: 10px;">Game ${matchup.id.slice(-1)}</div>
-                    ${matchup.teams.map(team => `
-                        <div class="team ${picks[matchup.id] === team.toLowerCase() ? 'selected' : ''}"
-                             onclick="selectWildcard('${matchup.id}', '${team.toLowerCase()}')">
-                            ${team}
-                        </div>
-                    `).join('')}
+                    <div style="font-weight: 600; margin-bottom: 10px;">Game ${i + 1} (${matchup.title})</div>
+                    ${matchup.teams.map(team => {
+                        const key = getTeamKey(team);
+                        return `
+                            <div class="team ${picks[matchup.id] === key ? 'selected' : ''}"
+                                 onclick="selectWildcard('${matchup.id}', '${key}')">
+                                ${team}
+                            </div>
+                        `;
+                    }).join('')}
                 </div>
             `).join('');
         }
 
-        function selectWildcard(gameId, team) {
-            picks[gameId] = team;
+        function selectWildcard(gameId, teamKey) {
+            picks[gameId] = teamKey;
             renderWildcard();
             updateBracket();
         }
 
         function updateBracket() {
-            // Get wildcard winners and reseed based on their seeds
+            // Get wildcard winners and reseed
             const afcWildcardWinners = [picks.wc_afc_1, picks.wc_afc_2, picks.wc_afc_3].filter(t => t);
             const nfcWildcardWinners = [picks.wc_nfc_1, picks.wc_nfc_2, picks.wc_nfc_3].filter(t => t);
 
-            // Add #1 seeds and sort by seed number
-            const afcTeams = ['broncos', ...afcWildcardWinners].sort((a, b) => teamSeeds[a] - teamSeeds[b]);
-            const nfcTeams = ['seahawks', ...nfcWildcardWinners].sort((a, b) => teamSeeds[a] - teamSeeds[b]);
+            // Get #1 seeds (index 0 in config arrays)
+            const afc1Seed = getTeamKey(config.afc[0]);
+            const nfc1Seed = getTeamKey(config.nfc[0]);
 
-            // Reseed: #1 plays lowest seed, middle two play each other
-            const afcDiv1Team1 = afcTeams[0]; // Highest seed (#1)
+            // Add #1 seeds and sort by seed number for reseeding
+            const afcTeams = [afc1Seed, ...afcWildcardWinners].sort((a, b) => teamSeeds[a] - teamSeeds[b]);
+            const nfcTeams = [nfc1Seed, ...nfcWildcardWinners].sort((a, b) => teamSeeds[a] - teamSeeds[b]);
+
+            // Reseed: #1 plays lowest remaining seed, 2nd plays 3rd
+            const afcDiv1Team1 = afcTeams[0]; // Highest seed
             const afcDiv1Team2 = afcTeams[3]; // Lowest seed
-            const afcDiv2Team1 = afcTeams[1]; // 2nd highest seed
-            const afcDiv2Team2 = afcTeams[2]; // 3rd highest seed
+            const afcDiv2Team1 = afcTeams[1]; // 2nd highest
+            const afcDiv2Team2 = afcTeams[2]; // 3rd highest
 
-            const nfcDiv1Team1 = nfcTeams[0]; // Highest seed (#1)
-            const nfcDiv1Team2 = nfcTeams[3]; // Lowest seed
-            const nfcDiv2Team1 = nfcTeams[1]; // 2nd highest seed
-            const nfcDiv2Team2 = nfcTeams[2]; // 3rd highest seed
+            const nfcDiv1Team1 = nfcTeams[0];
+            const nfcDiv1Team2 = nfcTeams[3];
+            const nfcDiv2Team1 = nfcTeams[1];
+            const nfcDiv2Team2 = nfcTeams[2];
 
-            // AFC Divisional
+            // AFC Bracket
             const afcBracket = document.getElementById('afc-bracket');
             afcBracket.innerHTML = `
                 <div class="round">
                     <div class="round-title">Divisional</div>
                     <div class="matchup">
                         <div style="font-weight: 600; margin-bottom: 10px;">Game 1 (Highest vs Lowest Seed)</div>
-                        ${renderTeam(afcDiv1Team1, 'div_afc_1', 'Broncos (1 seed)')}
+                        ${renderTeam(afcDiv1Team1, 'div_afc_1', `${config.afc[0]} (1 seed)`)}
                         ${renderTeam(afcDiv1Team2, 'div_afc_1', 'Select wildcard winners first')}
                     </div>
                     <div class="matchup">
@@ -399,14 +467,14 @@
                 </div>
             `;
 
-            // NFC Divisional
+            // NFC Bracket
             const nfcBracket = document.getElementById('nfc-bracket');
             nfcBracket.innerHTML = `
                 <div class="round">
                     <div class="round-title">Divisional</div>
                     <div class="matchup">
                         <div style="font-weight: 600; margin-bottom: 10px;">Game 1 (Highest vs Lowest Seed)</div>
-                        ${renderTeam(nfcDiv1Team1, 'div_nfc_1', 'Seahawks (1 seed)')}
+                        ${renderTeam(nfcDiv1Team1, 'div_nfc_1', `${config.nfc[0]} (1 seed)`)}
                         ${renderTeam(nfcDiv1Team2, 'div_nfc_1', 'Select wildcard winners first')}
                     </div>
                     <div class="matchup">
@@ -436,29 +504,30 @@
             // Champion display
             const champion = document.getElementById('champion-display');
             if (picks.superbowl) {
-                champion.innerHTML = `🏆 ${capitalize(picks.superbowl)} 🏆`;
+                champion.innerHTML = `Champion: ${getTeamDisplay(picks.superbowl)}`;
                 champion.style.color = '#ffd700';
             } else {
-                champion.innerHTML = 'Select your champion above ⬆️';
+                champion.innerHTML = 'Select your champion above';
                 champion.style.color = '#667eea';
             }
         }
 
-        function renderTeam(team, gameId, placeholder) {
-            if (!team) {
+        function renderTeam(teamKey, gameId, placeholder) {
+            if (!teamKey) {
                 return `<div class="team disabled">${placeholder}</div>`;
             }
-            const isSelected = picks[gameId] === team;
+            const isSelected = picks[gameId] === teamKey;
+            const displayName = getTeamDisplay(teamKey);
             return `
                 <div class="team ${isSelected ? 'selected' : ''}"
-                     onclick="selectTeam('${gameId}', '${team}')">
-                    ${capitalize(team)}
+                     onclick="selectTeam('${gameId}', '${teamKey}')">
+                    ${displayName}
                 </div>
             `;
         }
 
-        function selectTeam(gameId, team) {
-            picks[gameId] = team;
+        function selectTeam(gameId, teamKey) {
+            picks[gameId] = teamKey;
 
             // Reset downstream picks when changing earlier rounds
             if (gameId.startsWith('wc_')) {
@@ -477,11 +546,7 @@
             updateBracket();
         }
 
-        function capitalize(str) {
-            if (!str) return '';
-            if (str === 'fortyniners') return '49ers';
-            return str.charAt(0).toUpperCase() + str.slice(1);
-        }
+        // ===== SUBMISSION =====
 
         function downloadBracket() {
             const name = document.getElementById('participant-name').value.trim();
@@ -494,7 +559,6 @@
                 return;
             }
 
-            // Check if all wildcard picks are made
             const requiredWildcard = ['wc_afc_1', 'wc_afc_2', 'wc_afc_3', 'wc_nfc_1', 'wc_nfc_2', 'wc_nfc_3'];
             for (let key of requiredWildcard) {
                 if (!picks[key]) {
@@ -526,7 +590,7 @@
             URL.revokeObjectURL(url);
 
             messageDiv.className = 'message success';
-            messageDiv.textContent = `✓ Bracket downloaded! Send the file to your pool organizer.`;
+            messageDiv.textContent = `Bracket downloaded! Send the file to your pool organizer.`;
 
             setTimeout(() => {
                 messageDiv.style.display = 'none';
@@ -545,7 +609,6 @@
                 return;
             }
 
-            // Check if all wildcard picks are made
             const requiredWildcard = ['wc_afc_1', 'wc_afc_2', 'wc_afc_3', 'wc_nfc_1', 'wc_nfc_2', 'wc_nfc_3'];
             for (let key of requiredWildcard) {
                 if (!picks[key]) {
@@ -563,7 +626,6 @@
                 return;
             }
 
-            // Disable submit button while submitting
             const submitBtn = document.getElementById('submit-btn');
             submitBtn.disabled = true;
             submitBtn.textContent = 'Submitting...';
@@ -571,9 +633,7 @@
             try {
                 const response = await fetch('/api/data', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         name: name,
                         picks: picks,
@@ -585,17 +645,15 @@
 
                 if (result.success) {
                     messageDiv.className = 'message success';
-                    messageDiv.textContent = `✓ Bracket submitted successfully! You're all set for the playoffs.`;
+                    messageDiv.textContent = `Bracket submitted successfully! You're all set for the playoffs.`;
                     messageDiv.style.display = 'block';
-
-                    // Optionally clear form or disable further edits
                     submitBtn.textContent = 'Submitted!';
                 } else {
                     throw new Error(result.error || 'Failed to submit bracket');
                 }
             } catch (error) {
                 messageDiv.className = 'message error';
-                messageDiv.textContent = `✗ Error: ${error.message}. Try downloading your bracket as backup.`;
+                messageDiv.textContent = `Error: ${error.message}. Try downloading your bracket as backup.`;
                 messageDiv.style.display = 'block';
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Submit My Bracket';
@@ -610,7 +668,8 @@
             }
         }
 
-        init();
+        // ===== INITIALIZATION =====
+        loadConfig();
     </script>
 </body>
 </html>

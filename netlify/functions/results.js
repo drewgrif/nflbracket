@@ -33,7 +33,7 @@ export default async (req, context) => {
     // Get current data
     let data = await store.get("data", { type: "json" });
     if (!data) {
-      data = { brackets: [], results: {} };
+      data = { brackets: [], results: {}, config: null };
     }
 
     // Update results

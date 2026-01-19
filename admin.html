@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFL Bracket Pool - Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: #444;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input[type="text"], input[type="password"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button.secondary {
+            background: #6c757d;
+        }
+
+        button.secondary:hover {
+            background: #5a6268;
+        }
+
+        button.danger {
+            background: #dc3545;
+        }
+
+        button.danger:hover {
+            background: #c82333;
+        }
+
+        .success-message, .error-message {
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Team Config Styles */
+        .team-config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .team-config-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .conference-config {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .conference-config h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .seed-input {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .seed-input label {
+            width: 80px;
+            margin: 0;
+        }
+
+        .seed-input input {
+            flex: 1;
+        }
+
+        /* Game Results Styles */
+        .conference-columns {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 900px) {
+            .conference-columns {
+                flex-direction: column;
+            }
+        }
+
+        .conference-column {
+            flex: 1;
+        }
+
+        .conference-header {
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .conference-column h5 {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 15px;
+        }
+
+        .game-card {
+            background: #f8f9fa;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .game-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .team-button {
+            width: 100%;
+            margin: 5px 0;
+            padding: 10px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .team-button:hover {
+            border-color: #667eea;
+        }
+
+        .team-button.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        /* Leaderboard Table */
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .leaderboard-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .leaderboard-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .leaderboard-table tr:hover {
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">&larr; Back to Leaderboard</a>
+
+        <h1>Admin Panel</h1>
+        <p class="subtitle">Manage teams, results, and brackets</p>
+
+        <!-- Password Protection -->
+        <div id="admin-login">
+            <div class="form-group">
+                <label for="admin-password">Admin Password</label>
+                <input type="password" id="admin-password" placeholder="Enter admin password">
+            </div>
+            <button onclick="checkAdminPassword()">Login</button>
+            <div id="admin-login-message" style="margin-top: 15px;"></div>
+        </div>
+
+        <div id="admin-content" class="hidden">
+            <!-- Team Configuration -->
+            <div class="section">
+                <h2 class="section-title">Team Configuration</h2>
+                <p style="margin-bottom: 15px; color: #666;">
+                    Set the 14 playoff teams by seed (1-7 for each conference). Seed 1 gets the bye.
+                </p>
+                <div class="team-config-grid">
+                    <div class="conference-config">
+                        <h3>AFC Seeds</h3>
+                        <div class="seed-input"><label>1 (Bye):</label><input type="text" id="afc-1" placeholder="Team name"></div>
+                        <div class="seed-input"><label>2:</label><input type="text" id="afc-2" placeholder="Team name"></div>
+                        <div class="seed-input"><label>3:</label><input type="text" id="afc-3" placeholder="Team name"></div>
+                        <div class="seed-input"><label>4:</label><input type="text" id="afc-4" placeholder="Team name"></div>
+                        <div class="seed-input"><label>5:</label><input type="text" id="afc-5" placeholder="Team name"></div>
+                        <div class="seed-input"><label>6:</label><input type="text" id="afc-6" placeholder="Team name"></div>
+                        <div class="seed-input"><label>7:</label><input type="text" id="afc-7" placeholder="Team name"></div>
+                    </div>
+                    <div class="conference-config">
+                        <h3>NFC Seeds</h3>
+                        <div class="seed-input"><label>1 (Bye):</label><input type="text" id="nfc-1" placeholder="Team name"></div>
+                        <div class="seed-input"><label>2:</label><input type="text" id="nfc-2" placeholder="Team name"></div>
+                        <div class="seed-input"><label>3:</label><input type="text" id="nfc-3" placeholder="Team name"></div>
+                        <div class="seed-input"><label>4:</label><input type="text" id="nfc-4" placeholder="Team name"></div>
+                        <div class="seed-input"><label>5:</label><input type="text" id="nfc-5" placeholder="Team name"></div>
+                        <div class="seed-input"><label>6:</label><input type="text" id="nfc-6" placeholder="Team name"></div>
+                        <div class="seed-input"><label>7:</label><input type="text" id="nfc-7" placeholder="Team name"></div>
+                    </div>
+                </div>
+                <button onclick="saveTeamConfig()" style="margin-top: 20px;">Save Teams</button>
+                <div id="team-config-message" style="margin-top: 10px;"></div>
+            </div>
+
+            <!-- Mark Game Results -->
+            <div class="section">
+                <h2 class="section-title">Mark Game Results</h2>
+                <p style="margin-bottom: 15px; color: #666;">
+                    Click on the winning team for each game. The bracket will automatically advance teams to the next rounds with proper reseeding.
+                    Scores update in real-time as you mark games. Click "Save Results" to persist changes.
+                </p>
+                <div id="games-container"></div>
+                <button id="save-results-btn" onclick="saveResultsToServer()" style="margin-top: 20px;">Save Results</button>
+                <div id="save-results-message" style="margin-top: 10px;"></div>
+            </div>
+
+            <!-- Manage Brackets -->
+            <div class="section">
+                <h2 class="section-title">Manage Brackets</h2>
+                <p style="margin-bottom: 15px; color: #666;">
+                    Remove individual bracket submissions. Deleted brackets cannot be recovered (unless you have a backup).
+                </p>
+                <div id="brackets-list"></div>
+            </div>
+
+            <!-- Data Management -->
+            <div class="section">
+                <h2 class="section-title">Data Management</h2>
+                <div class="button-group">
+                    <button onclick="document.getElementById('import-bracket-files').click()">Import Bracket Files</button>
+                    <button onclick="exportData()">Export Data (JSON)</button>
+                    <button onclick="document.getElementById('import-file').click()" class="secondary">Import Backup JSON</button>
+                    <button onclick="clearAllData()" class="danger">Clear All Data</button>
+                </div>
+                <input type="file" id="import-bracket-files" accept=".json" multiple style="display: none;" onchange="importBracketFiles(event)">
+                <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(event)">
+                <div id="import-result" style="margin-top: 15px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== STATE =====
+        let brackets = [];
+        let results = {};
+        let config = { afc: [], nfc: [] };
+        let adminPassword = null;
+
+        // ===== API FUNCTIONS =====
+
+        async function loadData() {
+            try {
+                const response = await fetch('/api/data');
+                const data = await response.json();
+                brackets = data.brackets || [];
+                results = data.results || {};
+                renderBracketsList();
+                renderGamesForAdmin();
+            } catch (error) {
+                console.error('Failed to load data:', error);
+            }
+        }
+
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const data = await response.json();
+                config = data.config || { afc: [], nfc: [] };
+                populateTeamInputs();
+            } catch (error) {
+                console.error('Failed to load config:', error);
+            }
+        }
+
+        // ===== ADMIN LOGIN =====
+
+        document.getElementById('admin-password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkAdminPassword();
+            }
+        });
+
+        async function checkAdminPassword() {
+            const passwordInput = document.getElementById('admin-password');
+            const messageDiv = document.getElementById('admin-login-message');
+            const password = passwordInput.value;
+
+            try {
+                const response = await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                if (response.ok) {
+                    adminPassword = password;
+                    document.getElementById('admin-login').style.display = 'none';
+                    document.getElementById('admin-content').classList.remove('hidden');
+                    await loadConfig();
+                    await loadData();
+                } else {
+                    messageDiv.innerHTML = '<div class="error-message">Incorrect password</div>';
+                    passwordInput.value = '';
+                    setTimeout(() => { messageDiv.innerHTML = ''; }, 3000);
+                }
+            } catch (error) {
+                messageDiv.innerHTML = '<div class="error-message">Connection error</div>';
+                setTimeout(() => { messageDiv.innerHTML = ''; }, 3000);
+            }
+        }
+
+        // ===== TEAM CONFIGURATION =====
+
+        function populateTeamInputs() {
+            for (let i = 1; i <= 7; i++) {
+                const afcInput = document.getElementById(`afc-${i}`);
+                const nfcInput = document.getElementById(`nfc-${i}`);
+                if (afcInput && config.afc[i - 1]) afcInput.value = config.afc[i - 1];
+                if (nfcInput && config.nfc[i - 1]) nfcInput.value = config.nfc[i - 1];
+            }
+        }
+
+        async function saveTeamConfig() {
+            const messageDiv = document.getElementById('team-config-message');
+            const afcTeams = [];
+            const nfcTeams = [];
+
+            for (let i = 1; i <= 7; i++) {
+                const afcValue = document.getElementById(`afc-${i}`).value.trim();
+                const nfcValue = document.getElementById(`nfc-${i}`).value.trim();
+
+                if (!afcValue || !nfcValue) {
+                    messageDiv.innerHTML = '<div class="error-message">All 14 team fields are required</div>';
+                    return;
+                }
+
+                afcTeams.push(afcValue);
+                nfcTeams.push(nfcValue);
+            }
+
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        password: adminPassword,
+                        config: { afc: afcTeams, nfc: nfcTeams }
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    config = { afc: afcTeams, nfc: nfcTeams };
+                    messageDiv.innerHTML = '<div class="success-message">Teams saved successfully!</div>';
+                    renderGamesForAdmin();
+                } else {
+                    messageDiv.innerHTML = `<div class="error-message">${result.error || 'Failed to save teams'}</div>`;
+                }
+
+                setTimeout(() => { messageDiv.innerHTML = ''; }, 3000);
+            } catch (error) {
+                messageDiv.innerHTML = '<div class="error-message">Error saving teams</div>';
+                setTimeout(() => { messageDiv.innerHTML = ''; }, 3000);
+            }
+        }
+
+        // ===== GAME RESULTS =====
+
+        function getTeamKey(teamName) {
+            // Convert team name to lowercase key
+            return teamName.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+        }
+
+        function getTeamDisplay(teamKey) {
+            // Find team name from config by key
+            for (let i = 0; i < config.afc.length; i++) {
+                if (getTeamKey(config.afc[i]) === teamKey) return config.afc[i];
+            }
+            for (let i = 0; i < config.nfc.length; i++) {
+                if (getTeamKey(config.nfc[i]) === teamKey) return config.nfc[i];
+            }
+            return teamKey;
+        }
+
+        function getTeamSeed(teamKey, conference) {
+            const teams = conference === 'AFC' ? config.afc : config.nfc;
+            for (let i = 0; i < teams.length; i++) {
+                if (getTeamKey(teams[i]) === teamKey) return i + 1;
+            }
+            return 8;
+        }
+
+        function renderGamesForAdmin() {
+            const container = document.getElementById('games-container');
+
+            if (!config.afc.length || !config.nfc.length) {
+                container.innerHTML = '<p style="color: #999;">Configure teams first to see game matchups.</p>';
+                return;
+            }
+
+            // Build team keys and seeds
+            const afcTeams = config.afc.map((name, i) => ({ key: getTeamKey(name), name, seed: i + 1 }));
+            const nfcTeams = config.nfc.map((name, i) => ({ key: getTeamKey(name), name, seed: i + 1 }));
+
+            // Wildcard matchups: #2 vs #7, #3 vs #6, #4 vs #5
+            const afcWildcard = [
+                { id: 'wc_afc_1', teams: [afcTeams[1], afcTeams[6]], title: 'WC Game 1 (#2 vs #7)' },
+                { id: 'wc_afc_2', teams: [afcTeams[2], afcTeams[5]], title: 'WC Game 2 (#3 vs #6)' },
+                { id: 'wc_afc_3', teams: [afcTeams[3], afcTeams[4]], title: 'WC Game 3 (#4 vs #5)' }
+            ];
+            const nfcWildcard = [
+                { id: 'wc_nfc_1', teams: [nfcTeams[1], nfcTeams[6]], title: 'WC Game 1 (#2 vs #7)' },
+                { id: 'wc_nfc_2', teams: [nfcTeams[2], nfcTeams[5]], title: 'WC Game 2 (#3 vs #6)' },
+                { id: 'wc_nfc_3', teams: [nfcTeams[3], nfcTeams[4]], title: 'WC Game 3 (#4 vs #5)' }
+            ];
+
+            let afcHtml = '<h5 style="margin-top: 0;">Wildcard Round</h5>';
+            afcWildcard.forEach(game => {
+                afcHtml += renderGameCard(game.id, game.title, game.teams);
+            });
+
+            let nfcHtml = '<h5 style="margin-top: 0;">Wildcard Round</h5>';
+            nfcWildcard.forEach(game => {
+                nfcHtml += renderGameCard(game.id, game.title, game.teams);
+            });
+
+            // Divisional Round - reseed based on wildcard winners
+            afcHtml += '<h5 style="margin-top: 25px;">Divisional Round</h5>';
+            const afcWCWinners = [results.wc_afc_1, results.wc_afc_2, results.wc_afc_3].filter(t => t);
+            if (afcWCWinners.length === 3) {
+                const afcDivTeams = [afcTeams[0], ...afcWCWinners.map(key => ({
+                    key,
+                    name: getTeamDisplay(key),
+                    seed: getTeamSeed(key, 'AFC')
+                }))].sort((a, b) => a.seed - b.seed);
+                afcHtml += renderGameCard('div_afc_1', `Div Game 1 (#${afcDivTeams[0].seed} vs #${afcDivTeams[3].seed})`, [afcDivTeams[0], afcDivTeams[3]], true);
+                afcHtml += renderGameCard('div_afc_2', `Div Game 2 (#${afcDivTeams[1].seed} vs #${afcDivTeams[2].seed})`, [afcDivTeams[1], afcDivTeams[2]], true);
+            } else {
+                afcHtml += '<p style="color: #999; font-style: italic;">Mark all wildcard winners</p>';
+            }
+
+            nfcHtml += '<h5 style="margin-top: 25px;">Divisional Round</h5>';
+            const nfcWCWinners = [results.wc_nfc_1, results.wc_nfc_2, results.wc_nfc_3].filter(t => t);
+            if (nfcWCWinners.length === 3) {
+                const nfcDivTeams = [nfcTeams[0], ...nfcWCWinners.map(key => ({
+                    key,
+                    name: getTeamDisplay(key),
+                    seed: getTeamSeed(key, 'NFC')
+                }))].sort((a, b) => a.seed - b.seed);
+                nfcHtml += renderGameCard('div_nfc_1', `Div Game 1 (#${nfcDivTeams[0].seed} vs #${nfcDivTeams[3].seed})`, [nfcDivTeams[0], nfcDivTeams[3]], true);
+                nfcHtml += renderGameCard('div_nfc_2', `Div Game 2 (#${nfcDivTeams[1].seed} vs #${nfcDivTeams[2].seed})`, [nfcDivTeams[1], nfcDivTeams[2]], true);
+            } else {
+                nfcHtml += '<p style="color: #999; font-style: italic;">Mark all wildcard winners</p>';
+            }
+
+            // Conference Championships
+            afcHtml += '<h5 style="margin-top: 25px;">Conference Championship</h5>';
+            if (results.div_afc_1 && results.div_afc_2) {
+                afcHtml += renderGameCard('conf_afc', 'AFC Championship', [
+                    { key: results.div_afc_1, name: getTeamDisplay(results.div_afc_1) },
+                    { key: results.div_afc_2, name: getTeamDisplay(results.div_afc_2) }
+                ]);
+            } else {
+                afcHtml += '<p style="color: #999; font-style: italic;">Mark divisional winners</p>';
+            }
+
+            nfcHtml += '<h5 style="margin-top: 25px;">Conference Championship</h5>';
+            if (results.div_nfc_1 && results.div_nfc_2) {
+                nfcHtml += renderGameCard('conf_nfc', 'NFC Championship', [
+                    { key: results.div_nfc_1, name: getTeamDisplay(results.div_nfc_1) },
+                    { key: results.div_nfc_2, name: getTeamDisplay(results.div_nfc_2) }
+                ]);
+            } else {
+                nfcHtml += '<p style="color: #999; font-style: italic;">Mark divisional winners</p>';
+            }
+
+            // Build the HTML with columns
+            let html = '<div class="conference-columns">';
+            html += `<div class="conference-column"><div class="conference-header">AFC</div>${afcHtml}</div>`;
+            html += `<div class="conference-column"><div class="conference-header">NFC</div>${nfcHtml}</div>`;
+            html += '</div>';
+
+            // Super Bowl
+            html += '<div style="margin-top: 40px;">';
+            html += '<h4 style="text-align: center; color: #667eea; font-size: 1.5em; margin-bottom: 20px;">Super Bowl</h4>';
+            if (results.conf_afc && results.conf_nfc) {
+                html += `
+                    <div class="game-card">
+                        <button class="team-button ${results.superbowl === results.conf_afc ? 'selected' : ''}"
+                                onclick="selectWinner('superbowl', '${results.conf_afc}')">
+                            ${getTeamDisplay(results.conf_afc)}
+                        </button>
+                        <button class="team-button ${results.superbowl === results.conf_nfc ? 'selected' : ''}"
+                                onclick="selectWinner('superbowl', '${results.conf_nfc}')">
+                            ${getTeamDisplay(results.conf_nfc)}
+                        </button>
+                    </div>
+                    <div class="game-card" style="margin-top: 15px;">
+                        <div class="game-title">Total Points (Tiebreaker)</div>
+                        <input
+                            type="number"
+                            id="sb-actual-total"
+                            placeholder="Enter actual total points"
+                            value="${results.sbActualTotal || ''}"
+                            onchange="updateSBActualTotal(this.value)"
+                            style="width: 100%; padding: 10px; font-size: 16px; border: 2px solid #ddd; border-radius: 6px;"
+                            min="0"
+                            max="150"
+                        />
+                        <p style="margin-top: 5px; color: #666; font-size: 14px;">Enter the combined final score after the game</p>
+                    </div>
+                `;
+            } else {
+                html += '<p style="color: #999; font-style: italic; text-align: center;">Mark conference champions to see Super Bowl matchup</p>';
+            }
+            html += '</div>';
+
+            container.innerHTML = html;
+        }
+
+        function renderGameCard(gameId, title, teams, showSeeds = false) {
+            const currentWinner = results[gameId] || null;
+            return `
+                <div class="game-card">
+                    <div class="game-title">${title}</div>
+                    ${teams.map(team => `
+                        <button class="team-button ${currentWinner === team.key ? 'selected' : ''}"
+                                onclick="selectWinner('${gameId}', '${team.key}')">
+                            ${team.name}${showSeeds && team.seed ? ` (${team.seed})` : ''}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function selectWinner(gameId, teamKey) {
+            results[gameId] = teamKey;
+            renderGamesForAdmin();
+        }
+
+        function updateSBActualTotal(value) {
+            results.sbActualTotal = parseInt(value) || null;
+        }
+
+        let isSaving = false;
+
+        async function saveResultsToServer() {
+            if (isSaving) return;
+
+            const saveBtn = document.getElementById('save-results-btn');
+            const messageDiv = document.getElementById('save-results-message');
+
+            try {
+                isSaving = true;
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Saving...';
+                messageDiv.innerHTML = '';
+
+                const response = await fetch('/api/results', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: adminPassword, results })
+                });
+
+                const result = await response.json();
+
+                if (result && result.success) {
+                    messageDiv.innerHTML = '<div class="success-message">Results saved successfully!</div>';
+                    setTimeout(() => { messageDiv.innerHTML = ''; }, 3000);
+                } else {
+                    messageDiv.innerHTML = `<div class="error-message">${result?.error || 'Failed to save results'}</div>`;
+                }
+            } catch (error) {
+                messageDiv.innerHTML = `<div class="error-message">Error saving results: ${error.message}</div>`;
+            } finally {
+                isSaving = false;
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Results';
+            }
+        }
+
+        // ===== BRACKET MANAGEMENT =====
+
+        function renderBracketsList() {
+            const container = document.getElementById('brackets-list');
+            if (!container) return;
+
+            if (brackets.length === 0) {
+                container.innerHTML = '<p style="color: #666;">No brackets submitted yet.</p>';
+                return;
+            }
+
+            let html = '<table class="leaderboard-table"><thead><tr>';
+            html += '<th>Name</th>';
+            html += '<th>SB Total</th>';
+            html += '<th>Action</th>';
+            html += '</tr></thead><tbody>';
+
+            const sortedBrackets = [...brackets].sort((a, b) => a.name.localeCompare(b.name));
+
+            sortedBrackets.forEach(bracket => {
+                html += `
+                    <tr>
+                        <td>${escapeHtml(bracket.name)}</td>
+                        <td>${bracket.sbTotalPoints || 'N/A'}</td>
+                        <td><button onclick="deleteBracket('${escapeHtml(bracket.name).replace(/'/g, "\\'")}')" class="danger" style="padding: 5px 15px; font-size: 14px;">Delete</button></td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        async function deleteBracket(name) {
+            if (!confirm(`Delete bracket for "${name}"? This cannot be undone!`)) return;
+
+            const response = await fetch('/api/admin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    password: adminPassword,
+                    operation: 'delete',
+                    name: name
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                await loadData();
+                alert(`Bracket for "${name}" deleted successfully!`);
+            } else {
+                alert(result.error || 'Failed to delete bracket');
+            }
+        }
+
+        // ===== DATA MANAGEMENT =====
+
+        function exportData() {
+            const data = {
+                config: config,
+                brackets: brackets,
+                results: results,
+                exportDate: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `nfl-bracket-data-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        async function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+
+                    const response = await fetch('/api/admin', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            password: adminPassword,
+                            operation: 'import',
+                            data: {
+                                brackets: data.brackets || [],
+                                results: data.results || {}
+                            }
+                        })
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        await loadData();
+                        alert('Data imported successfully!');
+                    } else {
+                        alert(result.error || 'Failed to import data');
+                    }
+                } catch (error) {
+                    alert('Error importing data: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        async function importBracketFiles(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            const resultDiv = document.getElementById('import-result');
+            let imported = 0;
+            let errors = [];
+
+            for (let file of files) {
+                try {
+                    const text = await file.text();
+                    const data = JSON.parse(text);
+
+                    if (!data.name || !data.picks) {
+                        errors.push(`${file.name}: Invalid bracket file format`);
+                        continue;
+                    }
+
+                    const response = await fetch('/api/data', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: data.name,
+                            picks: data.picks,
+                            sbTotalPoints: data.sbTotalPoints || 0
+                        })
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        imported++;
+                    } else {
+                        errors.push(`${file.name}: ${result.error || 'Failed to import'}`);
+                    }
+                } catch (error) {
+                    errors.push(`${file.name}: ${error.message}`);
+                }
+            }
+
+            await loadData();
+
+            let message = `<div class="success-message">Successfully imported ${imported} bracket(s)!`;
+            if (errors.length > 0) {
+                message += `<br><br><strong>Errors:</strong><br>${errors.join('<br>')}`;
+            }
+            message += '</div>';
+
+            resultDiv.innerHTML = message;
+            setTimeout(() => { resultDiv.innerHTML = ''; }, 5000);
+        }
+
+        async function clearAllData() {
+            if (confirm('Are you sure you want to clear ALL data? This cannot be undone!')) {
+                const response = await fetch('/api/admin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        password: adminPassword,
+                        operation: 'clear'
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    await loadData();
+                    alert('All data cleared!');
+                } else {
+                    alert(result.error || 'Failed to clear data');
+                }
+            }
+        }
+
+        // ===== UTILITY =====
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

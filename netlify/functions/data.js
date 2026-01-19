@@ -10,7 +10,7 @@ export default async (req, context) => {
 
       // Return empty structure if no data exists yet
       if (!data) {
-        return new Response(JSON.stringify({ brackets: [], results: {} }), {
+        return new Response(JSON.stringify({ brackets: [], results: {}, config: null }), {
           headers: { "Content-Type": "application/json" }
         });
       }
@@ -41,7 +41,7 @@ export default async (req, context) => {
       // Get current data
       let data = await store.get("data", { type: "json" });
       if (!data) {
-        data = { brackets: [], results: {} };
+        data = { brackets: [], results: {}, config: null };
       }
 
       // Check if bracket already exists for this name

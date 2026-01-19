@@ -25,10 +25,12 @@ export default async (req, context) => {
 
     // Handle different admin operations
     if (input.operation === "import") {
-      // Import full backup data
+      // Import full backup data - preserve existing config unless provided
+      let existingData = await store.get("data", { type: "json" });
       const data = {
         brackets: input.data.brackets || [],
-        results: input.data.results || {}
+        results: input.data.results || {},
+        config: input.data.config || (existingData ? existingData.config : null)
       };
       await store.setJSON("data", data);
       return new Response(JSON.stringify({ success: true, message: "Data imported successfully" }), {
@@ -37,8 +39,9 @@ export default async (req, context) => {
     }
 
     if (input.operation === "clear") {
-      // Clear all data
-      const data = { brackets: [], results: {} };
+      // Clear brackets and results but preserve config
+      let existingData = await store.get("data", { type: "json" });
+      const data = { brackets: [], results: {}, config: existingData ? existingData.config : null };
       await store.setJSON("data", data);
       return new Response(JSON.stringify({ success: true, message: "All data cleared" }), {
         headers: { "Content-Type": "application/json" }
@@ -57,7 +60,7 @@ export default async (req, context) => {
       // Get current data
       let data = await store.get("data", { type: "json" });
       if (!data) {
-        data = { brackets: [], results: {} };
+        data = { brackets: [], results: {}, config: null };
       }
 
       // Filter out the bracket with the specified name
