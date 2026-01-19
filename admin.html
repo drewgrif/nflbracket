@@ -668,7 +668,12 @@
         }
 
         function selectWinner(gameId, teamKey) {
-            results[gameId] = teamKey;
+            // Toggle: clicking the same team deselects it
+            if (results[gameId] === teamKey) {
+                delete results[gameId];
+            } else {
+                results[gameId] = teamKey;
+            }
             renderGamesForAdmin();
         }
 
