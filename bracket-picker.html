@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NFL Playoff Bracket Picker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -28,10 +29,19 @@
         }
 
         h1 {
+            font-family: 'Oswald', sans-serif;
             text-align: center;
-            color: #333;
+            color: #1a1a2e;
             margin-bottom: 10px;
-            font-size: 2.5em;
+            font-size: 2.8em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        h2 {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .subtitle {
@@ -57,7 +67,7 @@
         .bracket-container {
             display: flex;
             justify-content: space-between;
-            gap: 20px;
+            gap: 30px;
             margin: 30px 0;
         }
 
@@ -66,11 +76,21 @@
         }
 
         .conference-title {
+            font-family: 'Oswald', sans-serif;
             text-align: center;
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #667eea;
+            font-size: 1.8em;
+            font-weight: 700;
             margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .conference-title.afc {
+            color: #2563eb;
+        }
+
+        .conference-title.nfc {
+            color: #dc2626;
         }
 
         .round {
@@ -78,41 +98,83 @@
         }
 
         .round-title {
-            font-size: 1.2em;
-            font-weight: 600;
-            color: #444;
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.1em;
+            color: #666;
             margin-bottom: 15px;
             text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .matchup {
-            background: #f8f9fa;
-            border: 2px solid #ddd;
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 15px;
+        }
+
+        .matchup.afc {
+            background: #eff6ff;
+            border: 2px solid #2563eb;
+        }
+
+        .matchup.nfc {
+            background: #fef2f2;
+            border: 2px solid #dc2626;
+        }
+
+        .matchup-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .matchup.afc .matchup-title {
+            color: #1e40af;
+        }
+
+        .matchup.nfc .matchup-title {
+            color: #991b1b;
         }
 
         .team {
             padding: 12px;
             margin: 5px 0;
             background: white;
-            border: 2px solid #ddd;
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.3s;
             font-weight: 500;
         }
 
-        .team:hover {
-            border-color: #667eea;
-            transform: translateX(5px);
+        .matchup.afc .team {
+            border: 2px solid #93c5fd;
         }
 
-        .team.selected {
-            background: #667eea;
+        .matchup.afc .team:hover {
+            border-color: #2563eb;
+            background: #dbeafe;
+        }
+
+        .matchup.afc .team.selected {
+            background: #2563eb;
             color: white;
-            border-color: #667eea;
+            border-color: #2563eb;
+        }
+
+        .matchup.nfc .team {
+            border: 2px solid #fca5a5;
+        }
+
+        .matchup.nfc .team:hover {
+            border-color: #dc2626;
+            background: #fee2e2;
+        }
+
+        .matchup.nfc .team.selected {
+            background: #dc2626;
+            color: white;
+            border-color: #dc2626;
         }
 
         .team.disabled {
@@ -124,16 +186,45 @@
             text-align: center;
             margin: 40px 0;
             padding: 30px;
-            background: #f8f9fa;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
             border-radius: 12px;
+            border: 3px solid #f59e0b;
+        }
+
+        .superbowl-section h2 {
+            color: #92400e;
+            font-size: 2em;
+        }
+
+        .superbowl-section .matchup {
+            background: white;
+            border: 2px solid #f59e0b;
+        }
+
+        .superbowl-section .team {
+            border: 2px solid #fcd34d;
+        }
+
+        .superbowl-section .team:hover {
+            border-color: #f59e0b;
+            background: #fef3c7;
+        }
+
+        .superbowl-section .team.selected {
+            background: #f59e0b;
+            color: white;
+            border-color: #f59e0b;
         }
 
         .champion-display {
+            font-family: 'Oswald', sans-serif;
             font-size: 2em;
             font-weight: bold;
-            color: #667eea;
+            color: #92400e;
             margin-top: 20px;
             min-height: 60px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .actions {
@@ -242,24 +333,24 @@
 
             <div class="bracket-container">
                 <div class="conference">
-                    <div class="conference-title">AFC</div>
+                    <div class="conference-title afc">AFC</div>
                     <div id="wildcard-afc"></div>
                 </div>
 
                 <div class="conference">
-                    <div class="conference-title">NFC</div>
+                    <div class="conference-title nfc">NFC</div>
                     <div id="wildcard-nfc"></div>
                 </div>
             </div>
 
             <div class="bracket-container">
                 <div class="conference">
-                    <div class="conference-title">AFC</div>
+                    <div class="conference-title afc">AFC</div>
                     <div id="afc-bracket"></div>
                 </div>
 
                 <div class="conference">
-                    <div class="conference-title">NFC</div>
+                    <div class="conference-title nfc">NFC</div>
                     <div id="nfc-bracket"></div>
                 </div>
             </div>
@@ -382,8 +473,8 @@
             const nfcContainer = document.getElementById('wildcard-nfc');
 
             afcContainer.innerHTML = afcMatchups.map((matchup, i) => `
-                <div class="matchup">
-                    <div style="font-weight: 600; margin-bottom: 10px;">Game ${i + 1} (${matchup.title})</div>
+                <div class="matchup afc">
+                    <div class="matchup-title">Game ${i + 1} (${matchup.title})</div>
                     ${matchup.teams.map(team => {
                         const key = getTeamKey(team);
                         return `
@@ -397,8 +488,8 @@
             `).join('');
 
             nfcContainer.innerHTML = nfcMatchups.map((matchup, i) => `
-                <div class="matchup">
-                    <div style="font-weight: 600; margin-bottom: 10px;">Game ${i + 1} (${matchup.title})</div>
+                <div class="matchup nfc">
+                    <div class="matchup-title">Game ${i + 1} (${matchup.title})</div>
                     ${matchup.teams.map(team => {
                         const key = getTeamKey(team);
                         return `
@@ -447,20 +538,20 @@
             afcBracket.innerHTML = `
                 <div class="round">
                     <div class="round-title">Divisional</div>
-                    <div class="matchup">
-                        <div style="font-weight: 600; margin-bottom: 10px;">Game 1 (Highest vs Lowest Seed)</div>
+                    <div class="matchup afc">
+                        <div class="matchup-title">Game 1 (Highest vs Lowest Seed)</div>
                         ${renderTeam(afcDiv1Team1, 'div_afc_1', `${config.afc[0]} (1 seed)`)}
                         ${renderTeam(afcDiv1Team2, 'div_afc_1', 'Select wildcard winners first')}
                     </div>
-                    <div class="matchup">
-                        <div style="font-weight: 600; margin-bottom: 10px;">Game 2</div>
+                    <div class="matchup afc">
+                        <div class="matchup-title">Game 2</div>
                         ${renderTeam(afcDiv2Team1, 'div_afc_2', 'Select wildcard winners first')}
                         ${renderTeam(afcDiv2Team2, 'div_afc_2', 'Select wildcard winners first')}
                     </div>
                 </div>
                 <div class="round">
                     <div class="round-title">AFC Championship</div>
-                    <div class="matchup">
+                    <div class="matchup afc">
                         ${renderTeam(picks.div_afc_1, 'conf_afc', 'Select divisional winners first')}
                         ${renderTeam(picks.div_afc_2, 'conf_afc', 'Select divisional winners first')}
                     </div>
@@ -472,20 +563,20 @@
             nfcBracket.innerHTML = `
                 <div class="round">
                     <div class="round-title">Divisional</div>
-                    <div class="matchup">
-                        <div style="font-weight: 600; margin-bottom: 10px;">Game 1 (Highest vs Lowest Seed)</div>
+                    <div class="matchup nfc">
+                        <div class="matchup-title">Game 1 (Highest vs Lowest Seed)</div>
                         ${renderTeam(nfcDiv1Team1, 'div_nfc_1', `${config.nfc[0]} (1 seed)`)}
                         ${renderTeam(nfcDiv1Team2, 'div_nfc_1', 'Select wildcard winners first')}
                     </div>
-                    <div class="matchup">
-                        <div style="font-weight: 600; margin-bottom: 10px;">Game 2</div>
+                    <div class="matchup nfc">
+                        <div class="matchup-title">Game 2</div>
                         ${renderTeam(nfcDiv2Team1, 'div_nfc_2', 'Select wildcard winners first')}
                         ${renderTeam(nfcDiv2Team2, 'div_nfc_2', 'Select wildcard winners first')}
                     </div>
                 </div>
                 <div class="round">
                     <div class="round-title">NFC Championship</div>
-                    <div class="matchup">
+                    <div class="matchup nfc">
                         ${renderTeam(picks.div_nfc_1, 'conf_nfc', 'Select divisional winners first')}
                         ${renderTeam(picks.div_nfc_2, 'conf_nfc', 'Select divisional winners first')}
                     </div>
@@ -505,10 +596,10 @@
             const champion = document.getElementById('champion-display');
             if (picks.superbowl) {
                 champion.innerHTML = `Champion: ${getTeamDisplay(picks.superbowl)}`;
-                champion.style.color = '#ffd700';
+                champion.style.color = '#92400e';
             } else {
                 champion.innerHTML = 'Select your champion above';
-                champion.style.color = '#667eea';
+                champion.style.color = '#92400e';
             }
         }
 

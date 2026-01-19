@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NFL Bracket Pool - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -28,10 +29,13 @@
         }
 
         h1 {
+            font-family: 'Oswald', sans-serif;
             text-align: center;
-            color: #333;
+            color: #1a1a2e;
             margin-bottom: 10px;
-            font-size: 2.5em;
+            font-size: 2.8em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
         .subtitle {
@@ -46,11 +50,14 @@
         }
 
         .section-title {
+            font-family: 'Oswald', sans-serif;
             font-size: 1.5em;
-            color: #444;
+            color: #1a1a2e;
             margin-bottom: 15px;
             padding-bottom: 10px;
             border-bottom: 3px solid #667eea;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .form-group {
@@ -171,9 +178,19 @@
         }
 
         .conference-config h3 {
-            color: #667eea;
+            font-family: 'Oswald', sans-serif;
             margin-bottom: 15px;
             text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .conference-config.afc h3 {
+            color: #2563eb;
+        }
+
+        .conference-config.nfc h3 {
+            color: #dc2626;
         }
 
         .seed-input {
@@ -209,11 +226,21 @@
         }
 
         .conference-header {
+            font-family: 'Oswald', sans-serif;
             text-align: center;
-            font-size: 1.5em;
+            font-size: 1.8em;
             font-weight: bold;
-            color: #667eea;
             margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .conference-header.afc {
+            color: #2563eb;
+        }
+
+        .conference-header.nfc {
+            color: #dc2626;
         }
 
         .conference-column h5 {
@@ -268,11 +295,13 @@
         }
 
         .leaderboard-table th {
-            background: #667eea;
+            background: #1a1a2e;
             color: white;
             padding: 15px;
             text-align: left;
-            font-weight: 600;
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .leaderboard-table td {
@@ -310,7 +339,7 @@
                     Set the 14 playoff teams by seed (1-7 for each conference). Seed 1 gets the bye.
                 </p>
                 <div class="team-config-grid">
-                    <div class="conference-config">
+                    <div class="conference-config afc">
                         <h3>AFC Seeds</h3>
                         <div class="seed-input"><label>1 (Bye):</label><input type="text" id="afc-1" placeholder="Team name"></div>
                         <div class="seed-input"><label>2:</label><input type="text" id="afc-2" placeholder="Team name"></div>
@@ -320,7 +349,7 @@
                         <div class="seed-input"><label>6:</label><input type="text" id="afc-6" placeholder="Team name"></div>
                         <div class="seed-input"><label>7:</label><input type="text" id="afc-7" placeholder="Team name"></div>
                     </div>
-                    <div class="conference-config">
+                    <div class="conference-config nfc">
                         <h3>NFC Seeds</h3>
                         <div class="seed-input"><label>1 (Bye):</label><input type="text" id="nfc-1" placeholder="Team name"></div>
                         <div class="seed-input"><label>2:</label><input type="text" id="nfc-2" placeholder="Team name"></div>
@@ -610,8 +639,8 @@
 
             // Build the HTML with columns
             let html = '<div class="conference-columns">';
-            html += `<div class="conference-column"><div class="conference-header">AFC</div>${afcHtml}</div>`;
-            html += `<div class="conference-column"><div class="conference-header">NFC</div>${nfcHtml}</div>`;
+            html += `<div class="conference-column"><div class="conference-header afc">AFC</div>${afcHtml}</div>`;
+            html += `<div class="conference-column"><div class="conference-header nfc">NFC</div>${nfcHtml}</div>`;
             html += '</div>';
 
             // Super Bowl
